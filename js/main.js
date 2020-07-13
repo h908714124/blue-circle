@@ -53,29 +53,46 @@ function findActive() {
     return undefined;
 }
 
-canvas.onmouseup = function (e) {
+function findHover(e) {
     // important: correct mouse position:
-    const rect = this.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-
-    const active = findActive();
-
     for (let r of points) {
-        // add a single rect to path:
         ctx.beginPath();
         ctx.rect(r.x, r.y, r.w, r.h);
-        const isActive = ctx.isPointInPath(x, y);
-        // check if we hover it, fill red, if not fill it blue
-        if (r !== active && isActive && active) {
-            ctx.beginPath();
-            ctx.moveTo(active.centerX(), active.centerY());
-            ctx.lineTo(r.centerX(), r.centerY());
-            ctx.stroke();
-            active.active = false;
-        } else {
-            r.active = isActive;
+        if (ctx.isPointInPath(x, y)) {
+            return r;
         }
+    }
+    return undefined;
+}
+
+canvas.onmouseup = function (e) {
+
+    const active = findActive();
+    const hover = findHover(e);
+
+    if (active) {
+        active.active = false;
+    }
+    if (hover) {
+        hover.active = true;
+    }
+    if (active === hover) {
+        return;
+    }
+
+    if (active && hover) {
+        ctx.beginPath();
+        ctx.moveTo(active.centerX(), active.centerY());
+        ctx.lineTo(hover.centerX(), hover.centerY());
+        ctx.stroke();
+    }
+
+    for (let r of points) {
+        ctx.beginPath();
+        ctx.rect(r.x, r.y, r.w, r.h);
         ctx.fillStyle = r.active ? "red" : "blue";
         ctx.fill();
     }
