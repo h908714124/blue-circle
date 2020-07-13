@@ -1,8 +1,8 @@
 import {Point} from './modules/Point.js';
 
-const w = window.innerWidth - 4;
-const h = window.innerHeight - 4;
-const r = Math.min(w / 2.0, h / 2.0) - 40;
+const w = window.innerWidth - 4.0;
+const h = window.innerHeight - 4.0;
+const r = (Math.min(w, h) - 40.0) / 2.0;
 const x0 = w / 2;
 const y0 = h / 2;
 const points = [];
