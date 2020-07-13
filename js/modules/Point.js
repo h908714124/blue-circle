@@ -3,8 +3,8 @@ class Point {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.w = 12;
-        this.h = 12;
+        this.w = 20;
+        this.h = 20;
         this.active = false;
     }
 
