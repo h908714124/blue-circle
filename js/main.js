@@ -13,7 +13,7 @@ const x0 = w / 2;
 const y0 = h / 2;
 const points = [];
 const segments = [];
-const N = 42; // how many dots to draw
+const N = 17; // how many dots to draw
 
 for (let i = 0; i < N; i++) {
     const phi = 2 * i * Math.PI * (1.0 / N);
@@ -31,19 +31,12 @@ for (let point of points) {
     ctx.fillRect(point.x, point.y, point.w, point.h);
 }
 canvas.onmousemove = function (e) {
-
-    // important: correct mouse position:
-    const rect = this.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const hover = findHover(e);
 
     for (let r of points) {
-        // add a single rect to path:
         ctx.beginPath();
         ctx.rect(r.x, r.y, r.w, r.h);
-
-        // check if we hover it, fill red, if not fill it blue
-        ctx.fillStyle = ctx.isPointInPath(x, y) ? color_hover : r.active ? color_active : color_inactive;
+        ctx.fillStyle = r === hover ? color_hover : r.active ? color_active : color_inactive;
         ctx.fill();
     }
 };
@@ -62,14 +55,16 @@ function findHover(e) {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    for (let r of points) {
-        ctx.beginPath();
-        ctx.rect(r.x, r.y, r.w, r.h);
-        if (ctx.isPointInPath(x, y)) {
-            return r;
+    let bestP = undefined;
+    let bestD = 35000;
+    for (let p of points) {
+        const d = (x - p.x - p.w / 2.0) * (x - p.x - p.w / 2.0) + (y - p.y - p.h / 2.0) * (y - p.y - p.h / 2.0);
+        if (d < bestD) {
+            bestD = d;
+            bestP = p;
         }
     }
-    return undefined;
+    return bestP;
 }
 
 function findSegment(a, b) {
@@ -104,14 +99,13 @@ canvas.onmouseup = function (e) {
         } else {
             segments.push(new Segment(active, hover));
         }
+        hover.active = false;
     }
 
     render();
 }
 
 function render() {
-
-    console.log(segments.length);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
