@@ -20,5 +20,24 @@ canvas.height = h;
 const ctx = canvas.getContext("2d");
 
 for (let point of points) {
-    ctx.fillRect(point.x, point.y, 2, 2); // draw 4 pixel
+    ctx.fillRect(point.x, point.y, point.w, point.h);
 }
+
+
+canvas.onmousemove = function (e) {
+
+    // important: correct mouse position:
+    const rect = this.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    for (let r of points) {
+        // add a single rect to path:
+        ctx.beginPath();
+        ctx.rect(r.x, r.y, r.w, r.h);
+
+        // check if we hover it, fill red, if not fill it blue
+        ctx.fillStyle = ctx.isPointInPath(x, y) ? "red" : "blue";
+        ctx.fill();
+    }
+};
