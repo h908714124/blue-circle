@@ -24,6 +24,7 @@ for (let point of points) {
 }
 
 
+/*
 canvas.onmousemove = function (e) {
 
     // important: correct mouse position:
@@ -41,3 +42,41 @@ canvas.onmousemove = function (e) {
         ctx.fill();
     }
 };
+*/
+
+function findActive() {
+    for (let r of points) {
+        if (r.active) {
+            return r;
+        }
+    }
+    return undefined;
+}
+
+canvas.onmouseup = function (e) {
+    // important: correct mouse position:
+    const rect = this.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const active = findActive();
+
+    for (let r of points) {
+        // add a single rect to path:
+        ctx.beginPath();
+        ctx.rect(r.x, r.y, r.w, r.h);
+        const isActive = ctx.isPointInPath(x, y);
+        // check if we hover it, fill red, if not fill it blue
+        if (r !== active && isActive && active) {
+            ctx.beginPath();
+            ctx.moveTo(active.centerX(), active.centerY());
+            ctx.lineTo(r.centerX(), r.centerY());
+            ctx.stroke();
+            active.active = false;
+        } else {
+            r.active = isActive;
+        }
+        ctx.fillStyle = r.active ? "red" : "blue";
+        ctx.fill();
+    }
+}
