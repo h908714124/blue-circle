@@ -5,9 +5,10 @@ const color_inactive = "#000000";
 const color_active = "red";
 const color_hover = "blue";
 
-const w = window.innerWidth - 4.0;
-const h = window.innerHeight - 4.0;
-const r = (Math.min(w, h) - 40.0) / 2.0;
+const m = Math.min(window.innerWidth, window.innerHeight);
+const w = m - 4.0;
+const h = m - 4.0;
+const r = (Math.min(w, h) - 40.0) / 2.0; // radius
 
 const x0 = w / 2;
 const y0 = h / 2;
@@ -18,8 +19,8 @@ const N = 17; // how many dots to draw
 for (let i = 0; i < N; i++) {
     const phi = 2 * i * Math.PI * (1.0 / N);
     const x = x0 + r * Math.cos(phi);
-    const y = y0 + r * Math.sin(phi);
-    points.push(new Point(x, y));
+    const y = y0 - r * Math.sin(phi);
+    points.push(new Point(i, x, y));
 }
 
 const canvas = document.getElementById('canvas');
@@ -30,15 +31,9 @@ const ctx = canvas.getContext("2d");
 for (let point of points) {
     ctx.fillRect(point.x, point.y, point.w, point.h);
 }
-canvas.onmousemove = function (e) {
-    const hover = findHover(e);
 
-    for (let r of points) {
-        ctx.beginPath();
-        ctx.rect(r.x, r.y, r.w, r.h);
-        ctx.fillStyle = r === hover ? color_hover : r.active ? color_active : color_inactive;
-        ctx.fill();
-    }
+canvas.onmousemove = function (e) {
+    render(e);
 };
 
 function findActive() {
@@ -56,9 +51,9 @@ function findHover(e) {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     let bestP = undefined;
-    let bestD = 35000;
+    let bestD = r / 2;
     for (let p of points) {
-        const d = (x - p.x - p.w / 2.0) * (x - p.x - p.w / 2.0) + (y - p.y - p.h / 2.0) * (y - p.y - p.h / 2.0);
+        const d = Math.sqrt((x - p.x - p.w / 2.0) * (x - p.x - p.w / 2.0) + (y - p.y - p.h / 2.0) * (y - p.y - p.h / 2.0));
         if (d < bestD) {
             bestD = d;
             bestP = p;
@@ -99,27 +94,44 @@ canvas.onmouseup = function (e) {
         } else {
             segments.push(new Segment(active, hover));
         }
+        segments.sort((s1, s2) => {
+            const h = s1.a.i - s2.a.i;
+            if (h !== 0) {
+                return h;
+            }
+            return s1.b.i - s2.b.i;
+        });
         hover.active = false;
     }
 
-    render();
+    render(e);
 }
 
-function render() {
+function render(e) {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const hover = findHover(e);
+    const s = document.getElementById("segments");
+    s.innerHTML = "";
 
     for (let segment of segments) {
         ctx.beginPath();
         ctx.moveTo(segment.a.centerX(), segment.a.centerY());
         ctx.lineTo(segment.b.centerX(), segment.b.centerY());
         ctx.stroke();
+        const div = document.createElement("tr");
+        div.innerHTML = "<td>" + segment.a.i + "</td><td>" + segment.b.i + "</td>";
+        s.appendChild(div);
     }
 
     for (let r of points) {
         ctx.beginPath();
         ctx.rect(r.x, r.y, r.w, r.h);
-        ctx.fillStyle = r.active ? color_active : color_inactive;
+        ctx.fillStyle = r.active ? color_active : r === hover ? color_hover : color_inactive;
         ctx.fill();
+        ctx.font = "12px Arial";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText("" + r.i, r.x + 4, r.y + 14);
     }
 }
