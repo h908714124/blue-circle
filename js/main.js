@@ -1,5 +1,5 @@
-import {Point} from './modules/Point.js';
-import {Segment} from './modules/Segment.js';
+import {Point} from '../src/modules/Point.js';
+import {Segment} from '../src/modules/Segment.js';
 
 const color_inactive = "#000000";
 const color_active = "red";
