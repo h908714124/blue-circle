@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {Point} from '../modules/Point';
 import {Segment} from '../modules/Segment';
+import {Title} from "@angular/platform-browser";
 
 @Component({
   selector: 'app-root',
@@ -8,7 +9,10 @@ import {Segment} from '../modules/Segment';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title: string = 'Blue Circle';
+
+  constructor(titleService: Title) {
+    titleService.setTitle('Blue Circle');
+  }
 
   ngOnInit(): void {
     const color_inactive: string = "#000000";
@@ -20,7 +24,7 @@ export class AppComponent implements OnInit {
     const h: number = m - 4.0;
     const r: number = (Math.min(w, h) - 40.0) / 2.0; // radius
 
-    const x0: number = w / 2;
+    const x0: number = w / 2 - 10;
     const y0: number = h / 2 - 10;
     const points: Point[] = [];
     const segments: Segment[] = [];
