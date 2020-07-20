@@ -8,45 +8,52 @@ import {Segment} from '../modules/Segment';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title = 'Blue Circle';
+  title: string = 'Blue Circle';
 
   ngOnInit(): void {
-    const color_inactive = "#000000";
-    const color_active = "red";
-    const color_hover = "blue";
+    const color_inactive: string = "#000000";
+    const color_active: string = "red";
+    const color_hover: string = "blue";
 
-    const m = Math.min(window.innerWidth, window.innerHeight);
-    const w = m - 4.0;
-    const h = m - 4.0;
-    const r = (Math.min(w, h) - 40.0) / 2.0; // radius
+    const m: number = Math.min(window.innerWidth, window.innerHeight);
+    const w: number = m - 4.0;
+    const h: number = m - 4.0;
+    const r: number = (Math.min(w, h) - 40.0) / 2.0; // radius
 
-    const x0 = w / 2;
-    const y0 = h / 2;
-    const points = [];
-    const segments = [];
+    const x0: number = w / 2;
+    const y0: number = h / 2 - 10;
+    const points: Point[] = [];
+    const segments: Segment[] = [];
     const N = 17; // how many dots to draw
 
+    let currentHover: Point = undefined;
+
     for (let i = 0; i < N; i++) {
-      const phi = 2 * i * Math.PI * (1.0 / N);
-      const x = x0 + r * Math.cos(phi);
+      const phi: number = 2 * i * Math.PI * (1.0 / N);
+      const x: number = x0 + r * Math.cos(phi);
       const y = y0 - r * Math.sin(phi);
       points.push(new Point(i, x, y));
     }
 
-    const canvas = document.getElementById('canvas');
+    const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
     canvas.width = w;
     canvas.height = h;
-    const ctx = canvas.getContext("2d");
+    renderHover();
 
-    for (let point of points) {
-      ctx.fillRect(point.x, point.y, point.w, point.h);
-    }
-
-    canvas.onmousemove = function (e) {
-      render(e);
+    canvas.onmousemove = function (e: MouseEvent) {
+      const hover: Point = findHover(e);
+      if (hover === currentHover) {
+        return;
+      }
+      currentHover = hover;
+      renderHover();
+    };
+    canvas.onmouseout = function (e: MouseEvent) {
+      currentHover = undefined;
+      renderHover();
     };
 
-    function findActive() {
+    function findActive(): Point {
       for (let r of points) {
         if (r.active) {
           return r;
@@ -55,26 +62,29 @@ export class AppComponent implements OnInit {
       return undefined;
     }
 
-    function findHover(e) {
+    function findHover(e: MouseEvent): Point {
       // important: correct mouse position:
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      let bestP = undefined;
-      let bestD = r / 2;
+      const rect: DOMRect = canvas.getBoundingClientRect();
+      const x: number = e.clientX - rect.left;
+      const y: number = e.clientY - rect.top;
+      let bestP: Point = undefined;
+      let bestD: number = r / 2;
       for (let p of points) {
-        const d = Math.sqrt((x - p.x - p.w / 2.0) * (x - p.x - p.w / 2.0) + (y - p.y - p.h / 2.0) * (y - p.y - p.h / 2.0));
+        const d: number = p.dist(x, y);
         if (d < bestD) {
           bestD = d;
           bestP = p;
         }
       }
+      if (bestD >= r / 2) {
+        return undefined;
+      }
       return bestP;
     }
 
-    function findSegment(a, b) {
+    function findSegment(a, b): number {
       for (let i = 0; i < segments.length; i++) {
-        let segment = segments[i];
+        let segment: Segment = segments[i];
         if ((segment.a === a && segment.b === b) || (segment.a === b && segment.b === a)) {
           return i;
         }
@@ -82,10 +92,10 @@ export class AppComponent implements OnInit {
       return undefined;
     }
 
-    canvas.onmouseup = function (e) {
+    canvas.onmouseup = function (e: MouseEvent) {
 
-      const active = findActive();
-      const hover = findHover(e);
+      const active: Point = findActive();
+      const hover: Point = findHover(e);
 
       if (hover) {
         hover.active = true;
@@ -94,11 +104,14 @@ export class AppComponent implements OnInit {
         active.active = false;
       }
       if (active === hover) {
+        active.active = false;
+        currentHover = hover;
+        renderHover();
         return;
       }
 
       if (active && hover) {
-        const i = findSegment(active, hover);
+        const i: number = findSegment(active, hover);
         if (i !== undefined) {
           segments.splice(i, 1);
         } else {
@@ -114,31 +127,35 @@ export class AppComponent implements OnInit {
         hover.active = false;
       }
 
-      render(e);
+      render();
     }
 
-    function render(e) {
+    function render(): void {
+      const ctx: CanvasRenderingContext2D = canvas.getContext("2d");
+      const s = document.getElementById("segments");
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const hover = findHover(e);
-      const s = document.getElementById("segments");
       s.innerHTML = "";
 
       for (let segment of segments) {
         ctx.beginPath();
-        ctx.moveTo(segment.a.centerX(), segment.a.centerY());
-        ctx.lineTo(segment.b.centerX(), segment.b.centerY());
+        ctx.moveTo(segment.a.centerX, segment.a.centerY);
+        ctx.lineTo(segment.b.centerX, segment.b.centerY);
         ctx.stroke();
-        const div = document.createElement("tr");
+        const div: HTMLElement = document.createElement("tr");
         div.innerHTML = "<td>" + segment.a.i + "</td><td>" + segment.b.i + "</td>";
         s.appendChild(div);
       }
+      currentHover = undefined;
+      renderHover();
+    }
 
+    function renderHover(): void {
+      const ctx: CanvasRenderingContext2D = canvas.getContext("2d");
       for (let r of points) {
         ctx.beginPath();
         ctx.rect(r.x, r.y, r.w, r.h);
-        ctx.fillStyle = r.active ? color_active : r === hover ? color_hover : color_inactive;
+        ctx.fillStyle = r.active ? color_active : r === currentHover ? color_hover : color_inactive;
         ctx.fill();
         ctx.font = "12px Arial";
         ctx.fillStyle = "#ffffff";
