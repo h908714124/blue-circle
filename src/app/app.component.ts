@@ -58,7 +58,7 @@ export class AppComponent implements OnInit {
 
     function findActive(): Point {
       for (let r of points) {
-        if (r.active) {
+        if (r.active() !== 0) {
           return r;
         }
       }
@@ -100,36 +100,36 @@ export class AppComponent implements OnInit {
       const active: Point = findActive();
       const hover: Point = findHover(e);
 
-      if (hover) {
-        hover.active = true;
+      if (!hover) {
+        for (let point of points) {
+          point.forceDeactivate();
+        }
+        currentHover = undefined;
+        renderUtil.renderHover(currentHover);
+        return;
       }
-      if (active) {
-        active.active = false;
-      }
-      if (active === hover) {
-        active.active = false;
+
+      if (active === hover || !active) {
+        hover.incActive();
         currentHover = hover;
         renderUtil.renderHover(currentHover);
         return;
       }
 
-      if (active && hover) {
-        const i: number = findSegment(active, hover);
-        if (i !== undefined) {
-          segments.splice(i, 1);
-        } else {
-          segments.push(new Segment(active, hover));
-        }
-        segments.sort((s1, s2) => {
-          const h = s1.a.i - s2.a.i;
-          if (h !== 0) {
-            return h;
-          }
-          return s1.b.i - s2.b.i;
-        });
-        hover.active = false;
+      const i: number = findSegment(active, hover);
+      if (i !== undefined) {
+        segments.splice(i, 1);
+      } else {
+        segments.push(new Segment(active, hover));
       }
-
+      segments.sort((s1, s2) => {
+        const h = s1.a.i - s2.a.i;
+        if (h !== 0) {
+          return h;
+        }
+        return s1.b.i - s2.b.i;
+      });
+      active.maybeDeactivate();
       render();
     }
 

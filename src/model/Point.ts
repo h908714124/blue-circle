@@ -5,7 +5,7 @@ export class Point {
   y: number;
   w: number = 20;
   h: number = 20;
-  active: boolean = false;
+  #active: number = 0;
   centerX: number;
   centerY: number;
 
@@ -15,6 +15,25 @@ export class Point {
     this.y = y;
     this.centerX = x + this.w / 2;
     this.centerY = y + this.h / 2;
+  }
+
+  active() {
+    return this.#active;
+  }
+
+  incActive() {
+    this.#active += 1;
+    this.#active = this.#active % 3;
+  }
+
+  maybeDeactivate() {
+    if (this.#active === 1) {
+      this.#active = 0;
+    }
+  }
+
+  forceDeactivate() {
+    this.#active = 0;
   }
 
   dist(x: number, y: number): number {
