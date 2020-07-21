@@ -19,9 +19,6 @@ export class RenderUtil {
 
   renderHover(hover: Point): void {
     const ctx: CanvasRenderingContext2D = this.canvas.getContext("2d");
-    if (hover !== undefined) {
-      console.log('no ' + hover.i)
-    }
     for (let r of this.points) {
       ctx.beginPath();
       ctx.arc(r.centerX, r.centerY, r.w, 0, tau);
