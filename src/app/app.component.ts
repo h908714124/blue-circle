@@ -34,8 +34,10 @@ export class AppComponent implements OnInit {
       const phi: number = 2 * i * Math.PI * (1.0 / N);
       const x: number = x0 + r * Math.cos(phi);
       const y = y0 - r * Math.sin(phi);
-      points.push(new Point(i, x, y));
+      points.push(new Point(i + 1, x, y));
     }
+
+    const D = points[0].dist(points[1].centerX, points[1].centerY)
 
     const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
     const renderUtil = new RenderUtil(points, canvas);
@@ -44,7 +46,7 @@ export class AppComponent implements OnInit {
     renderUtil.renderHover(undefined);
 
     canvas.onmousemove = function (e: MouseEvent) {
-      const hover: Point = findHover(e);
+      const hover: Point = findHover(e, findActive());
       if (hover === currentHover) {
         return;
       }
@@ -65,11 +67,33 @@ export class AppComponent implements OnInit {
       return undefined;
     }
 
-    function findHover(e: MouseEvent): Point {
+    function findHover(e: MouseEvent, active: Point): Point {
       // important: correct mouse position:
       const rect: DOMRect = canvas.getBoundingClientRect();
       const x: number = e.clientX - rect.left;
       const y: number = e.clientY - rect.top;
+      if (active === undefined || active.dist(x, y) < D / 2) {
+        return findHoverByDistance(x, y);
+      } else {
+        return findHoverByAngle(x, y, active)
+      }
+    }
+
+    function findHoverByAngle(x: number, y: number, active: Point): Point {
+      const angle = active.angle(x, y);
+      let bestP: Point = undefined;
+      let bestD: number = 100;
+      for (let p of points) {
+        const d: number = Math.abs(angle - active.angle(p.centerX, p.centerY));
+        if (d < bestD) {
+          bestD = d;
+          bestP = p;
+        }
+      }
+      return bestP;
+    }
+
+    function findHoverByDistance(x: number, y: number): Point {
       let bestP: Point = undefined;
       let bestD: number = r / 2;
       for (let p of points) {
@@ -98,7 +122,7 @@ export class AppComponent implements OnInit {
     canvas.onmouseup = function (e: MouseEvent) {
 
       const active: Point = findActive();
-      const hover: Point = findHover(e);
+      const hover: Point = findHover(e, active);
 
       if (!hover) {
         for (let point of points) {

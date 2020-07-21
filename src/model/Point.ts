@@ -39,5 +39,9 @@ export class Point {
   dist(x: number, y: number): number {
     return Math.sqrt((x - this.centerX) * (x - this.centerX) + (y - this.centerY) * (y - this.centerY))
   }
+
+  angle(x: number, y: number): number {
+    return Math.atan2(this.centerY - y, this.centerX - x);
+  }
 }
 

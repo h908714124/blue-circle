@@ -24,7 +24,7 @@ export class RenderUtil {
       ctx.fill();
       ctx.font = "12px Arial";
       ctx.fillStyle = r.active() === 2 ? "#000000" : "#ffffff";
-      ctx.fillText("" + (r.i + 1), r.x + 4, r.y + 14);
+      ctx.fillText("" + r.i, r.x + 4, r.y + 14);
     }
   }
 }
