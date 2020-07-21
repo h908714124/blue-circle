@@ -1,4 +1,4 @@
-class Point {
+export class Point {
 
   i: number;
   x: number;
@@ -22,4 +22,3 @@ class Point {
   }
 }
 
-export {Point};

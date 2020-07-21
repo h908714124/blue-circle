@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {Point} from '../modules/Point';
-import {Segment} from '../modules/Segment';
+import {Point} from '../model/Point';
+import {Segment} from '../model/Segment';
 import {Title} from "@angular/platform-browser";
+import {RenderUtil} from "../util/RenderUtil";
 
 @Component({
   selector: 'app-root',
@@ -15,9 +16,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const color_inactive: string = "#000000";
-    const color_active: string = "red";
-    const color_hover: string = "blue";
 
     const m: number = Math.min(window.innerWidth, window.innerHeight);
     const w: number = m - 4.0;
@@ -30,7 +28,7 @@ export class AppComponent implements OnInit {
     const segments: Segment[] = [];
     const N = 17; // how many dots to draw
 
-    let currentHover: Point = undefined;
+    let currentHover: Point;
 
     for (let i = 0; i < N; i++) {
       const phi: number = 2 * i * Math.PI * (1.0 / N);
@@ -40,9 +38,10 @@ export class AppComponent implements OnInit {
     }
 
     const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
+    const renderUtil = new RenderUtil(points, canvas);
     canvas.width = w;
     canvas.height = h;
-    renderHover();
+    renderUtil.renderHover(undefined);
 
     canvas.onmousemove = function (e: MouseEvent) {
       const hover: Point = findHover(e);
@@ -50,11 +49,11 @@ export class AppComponent implements OnInit {
         return;
       }
       currentHover = hover;
-      renderHover();
+      renderUtil.renderHover(currentHover);
     };
-    canvas.onmouseout = function (e: MouseEvent) {
+    canvas.onmouseout = function () {
       currentHover = undefined;
-      renderHover();
+      renderUtil.renderHover(currentHover);
     };
 
     function findActive(): Point {
@@ -110,7 +109,7 @@ export class AppComponent implements OnInit {
       if (active === hover) {
         active.active = false;
         currentHover = hover;
-        renderHover();
+        renderUtil.renderHover(currentHover);
         return;
       }
 
@@ -151,20 +150,7 @@ export class AppComponent implements OnInit {
         s.appendChild(div);
       }
       currentHover = undefined;
-      renderHover();
-    }
-
-    function renderHover(): void {
-      const ctx: CanvasRenderingContext2D = canvas.getContext("2d");
-      for (let r of points) {
-        ctx.beginPath();
-        ctx.rect(r.x, r.y, r.w, r.h);
-        ctx.fillStyle = r.active ? color_active : r === currentHover ? color_hover : color_inactive;
-        ctx.fill();
-        ctx.font = "12px Arial";
-        ctx.fillStyle = "#ffffff";
-        ctx.fillText("" + r.i, r.x + 4, r.y + 14);
-      }
+      renderUtil.renderHover(currentHover);
     }
   }
 }

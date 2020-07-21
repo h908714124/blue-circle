@@ -1,6 +1,6 @@
 import {Point} from "./Point";
 
-class Segment {
+export class Segment {
 
   a: Point;
   b: Point;
@@ -15,5 +15,3 @@ class Segment {
     }
   }
 }
-
-export {Segment};
