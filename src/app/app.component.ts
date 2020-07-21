@@ -84,6 +84,9 @@ export class AppComponent implements OnInit {
       let bestP: Point = undefined;
       let bestD: number = 100;
       for (let p of points) {
+        if (active === p) {
+          continue;
+        }
         const d: number = Math.abs(angle - active.angle(p.centerX, p.centerY));
         if (d < bestD) {
           bestD = d;
@@ -166,6 +169,8 @@ export class AppComponent implements OnInit {
 
       for (let segment of segments) {
         ctx.beginPath();
+        ctx.strokeStyle = '#faebd7';
+        ctx.lineWidth = 1.5;
         ctx.moveTo(segment.a.centerX, segment.a.centerY);
         ctx.lineTo(segment.b.centerX, segment.b.centerY);
         ctx.stroke();

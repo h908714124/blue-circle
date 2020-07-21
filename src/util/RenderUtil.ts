@@ -5,6 +5,8 @@ const color_active2: string = "yellow";
 const color_active: string = "red";
 const color_hover: string = "blue";
 
+const tau = 2 * Math.PI;
+
 export class RenderUtil {
 
   points: Point[];
@@ -15,11 +17,14 @@ export class RenderUtil {
     this.canvas = canvas;
   }
 
-  renderHover(hover): void {
+  renderHover(hover: Point): void {
     const ctx: CanvasRenderingContext2D = this.canvas.getContext("2d");
+    if (hover !== undefined) {
+      console.log('no ' + hover.i)
+    }
     for (let r of this.points) {
       ctx.beginPath();
-      ctx.rect(r.x, r.y, r.w, r.h);
+      ctx.arc(r.centerX, r.centerY, r.w, 0, tau);
       ctx.fillStyle = r.active() === 2 ? color_active2 : r.active() === 1 ? color_active : r === hover ? color_hover : color_inactive;
       ctx.fill();
       ctx.font = "12px Arial";
