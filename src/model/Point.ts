@@ -3,18 +3,12 @@ export class Point {
   i: number;
   x: number;
   y: number;
-  w: number = 20;
-  h: number = 20;
   #active: number = 0;
-  centerX: number;
-  centerY: number;
 
   constructor(i, x, y) {
     this.i = i;
     this.x = x;
     this.y = y;
-    this.centerX = x + this.w / 2;
-    this.centerY = y + this.h / 2;
   }
 
   active() {
@@ -37,11 +31,11 @@ export class Point {
   }
 
   dist(x: number, y: number): number {
-    return Math.sqrt((x - this.centerX) * (x - this.centerX) + (y - this.centerY) * (y - this.centerY))
+    return Math.sqrt((x - this.x) * (x - this.x) + (y - this.y) * (y - this.y))
   }
 
   angle(x: number, y: number): number {
-    return Math.atan2(this.centerY - y, this.centerX - x);
+    return Math.atan2(this.y - y, this.x - x);
   }
 }
 

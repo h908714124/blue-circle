@@ -3,6 +3,7 @@ import {Point} from '../model/Point';
 import {Segment} from '../model/Segment';
 import {Title} from "@angular/platform-browser";
 import {RenderUtil} from "../util/RenderUtil";
+import {Library} from "../util/Library";
 
 @Component({
   selector: 'app-root',
@@ -20,10 +21,10 @@ export class AppComponent implements OnInit {
     const m: number = Math.min(window.innerWidth, window.innerHeight);
     const w: number = m - 4.0;
     const h: number = m - 4.0;
-    const r: number = (Math.min(w, h) - 40.0) / 2.0; // radius
+    const r: number = (Math.min(w, h) - 52.0) / 2.0; // radius
 
-    const x0: number = w / 2 - 10;
-    const y0: number = h / 2 - 10;
+    const x0: number = w / 2;
+    const y0: number = h / 2;
     const points: Point[] = [];
     const segments: Segment[] = [];
     const N = 17; // how many dots to draw
@@ -36,8 +37,6 @@ export class AppComponent implements OnInit {
       const y = y0 - r * Math.sin(phi);
       points.push(new Point(i + 1, x, y));
     }
-
-    const D = points[0].dist(points[1].centerX, points[1].centerY)
 
     const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
     const renderUtil = new RenderUtil(points, canvas);
@@ -72,7 +71,7 @@ export class AppComponent implements OnInit {
       const rect: DOMRect = canvas.getBoundingClientRect();
       const x: number = e.clientX - rect.left;
       const y: number = e.clientY - rect.top;
-      if (active === undefined || active.dist(x, y) < D / 2) {
+      if (active === undefined || active.dist(x, y) < Library.R + 6) {
         return findHoverByDistance(x, y);
       } else {
         return findHoverByAngle(x, y, active)
@@ -87,7 +86,7 @@ export class AppComponent implements OnInit {
         if (active === p) {
           continue;
         }
-        const d: number = Math.abs(angle - active.angle(p.centerX, p.centerY));
+        const d: number = Math.abs(angle - active.angle(p.x, p.y));
         if (d < bestD) {
           bestD = d;
           bestP = p;
@@ -157,29 +156,7 @@ export class AppComponent implements OnInit {
         return s1.b.i - s2.b.i;
       });
       active.maybeDeactivate();
-      render();
-    }
-
-    function render(): void {
-      const ctx: CanvasRenderingContext2D = canvas.getContext("2d");
-      const s = document.getElementById("segments");
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      s.innerHTML = "";
-
-      for (let segment of segments) {
-        ctx.beginPath();
-        ctx.strokeStyle = '#faebd7';
-        ctx.lineWidth = 1.5;
-        ctx.moveTo(segment.a.centerX, segment.a.centerY);
-        ctx.lineTo(segment.b.centerX, segment.b.centerY);
-        ctx.stroke();
-        const div: HTMLElement = document.createElement("tr");
-        div.innerHTML = "<td>" + segment.a.i + "</td><td>" + segment.b.i + "</td>";
-        s.appendChild(div);
-      }
-      currentHover = undefined;
-      renderUtil.renderHover(currentHover);
+      renderUtil.render(segments);
     }
   }
 }
