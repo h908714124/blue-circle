@@ -4,6 +4,7 @@ import {Segment} from '../model/Segment';
 import {Title} from "@angular/platform-browser";
 import {RenderUtil} from "../util/RenderUtil";
 import {Library} from "../util/Library";
+import {OldStateChecker} from "../util/OldStateChecker";
 
 @Component({
   selector: 'app-root',
@@ -28,6 +29,8 @@ export class AppComponent implements OnInit {
     const points: Point[] = [];
     const segments: Segment[] = [];
     const N = 17; // how many dots to draw
+
+    const oldState: OldStateChecker = new OldStateChecker();
 
     let currentHover: Point;
 
@@ -144,16 +147,23 @@ export class AppComponent implements OnInit {
 
       const i: number = findSegment(active, hover);
       if (i !== undefined) {
+        oldState.push(segments[i]);
         segments.splice(i, 1);
       } else {
-        segments.push(new Segment(active, hover));
-      }
-      segments.sort((s1, s2) => {
-        const h = s1.a.i - s2.a.i;
-        if (h !== 0) {
-          return h;
+        const t = new Segment(active, hover);
+        if (oldState.isRepetition(t)) {
+          t.flip();
+          oldState.clear();
         }
-        return s1.b.i - s2.b.i;
+        segments.push(t);
+        oldState.push(t);
+      }
+      segments.sort((s, t) => {
+        const da = s.a.i - t.a.i;
+        if (da !== 0) {
+          return da;
+        }
+        return s.b.i - t.b.i;
       });
       active.maybeDeactivate();
       renderUtil.render(segments);
