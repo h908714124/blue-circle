@@ -83,7 +83,7 @@ export class AppComponent implements OnInit {
       if (active.dist(x, y) < Library.R + 6) {
         return active;
       }
-      return findHoverByAngle(x, y, active.p())
+      return findHoverByAngle(x, y, active.point())
     }
 
     function findHoverByAngle(x: number, y: number, active: Point): Node {
@@ -91,7 +91,7 @@ export class AppComponent implements OnInit {
       let bestP: Node = undefined;
       let bestD: number = 100;
       for (let node of nodes) {
-        if (active === node.p()) {
+        if (active === node.point()) {
           continue;
         }
         const d: number = Math.abs(angle - active.angle(node.x(), node.y()));
@@ -129,8 +129,15 @@ export class AppComponent implements OnInit {
 
       if (active === hover || !active) {
         hover.incActive();
-        currentHover = hover;
-        renderUtil.renderHover(currentHover);
+        if (hover.active() !== 0) {
+          const rect: DOMRect = canvas.getBoundingClientRect();
+          const x: number = e.clientX - rect.left;
+          const y: number = e.clientY - rect.top;
+          currentHover = findHoverByAngle(x, y, hover.point());
+          renderUtil.renderHover(currentHover);
+        }
+        currentHover = undefined;
+        onMouseMove(e);
         return;
       }
 
@@ -143,9 +150,10 @@ export class AppComponent implements OnInit {
         if (oldState.isRepetition(t)) {
           t.flip();
           oldState.clear();
+        } else {
+          oldState.push(t);
         }
         segments.push(t);
-        oldState.push(t);
       }
       segments.sort((s, t) => {
         const da = s.a.i - t.a.i;
@@ -156,6 +164,7 @@ export class AppComponent implements OnInit {
       });
       active.maybeDeactivate();
       renderUtil.render(segments);
+      currentHover = undefined;
       onMouseMove(e);
     }
   }

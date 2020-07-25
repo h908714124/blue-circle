@@ -26,16 +26,16 @@ export class Node {
     }
   }
 
+  fullActivate(): void {
+    this.#active = 2  ;
+  }
+
   forceDeactivate(): void {
     this.#active = 0;
   }
 
   dist(x: number, y: number): number {
     return this.#p.dist(x, y);
-  }
-
-  angle(x: number, y: number): number {
-    return this.#p.angle(x, y);;
   }
 
   x(): number {
@@ -46,7 +46,7 @@ export class Node {
     return this.#p.y;
   }
 
-  p(): Point {
+  point(): Point {
     return this.#p;
   }
 }

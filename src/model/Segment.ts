@@ -16,14 +16,15 @@ export class Segment {
   }
 
   flip(): void {
-    const active: Node = this.a.active() === 2 ? this.a : this.b;
-    if (active.active() !== 2) {
+    const active: Node = this.a.active() !== 0 ? this.a : this.b;
+    const inactive: Node = active === this.a ? this.b : this.a;
+    if (active.active() === 2) {
+      active.forceDeactivate();
+      inactive.fullActivate();
       return;
     }
-    const inactive: Node = active === this.a ? this.b : this.a;
-    active.forceDeactivate();
-    inactive.incActive();
-    inactive.incActive();
+    active.fullActivate();
+    inactive.forceDeactivate();
   }
 
   equals(s: Segment): boolean {
