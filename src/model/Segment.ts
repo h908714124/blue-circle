@@ -15,16 +15,27 @@ export class Segment {
     }
   }
 
-  flip(): void {
+  flipYellow(): void {
     const active: Node = this.a.active() !== 0 ? this.a : this.b;
     const inactive: Node = active === this.a ? this.b : this.a;
     if (active.active() === 2) {
-      active.forceDeactivate();
-      inactive.fullActivate();
+      active.setActive(0);
+      inactive.setActive(2);
       return;
     }
-    active.fullActivate();
-    inactive.forceDeactivate();
+    active.setActive(2);
+    inactive.setActive(0);
+  }
+
+  simpleFlip(): void {
+    const active: Node = this.a.active() !== 0 ? this.a : this.b;
+    if (active.active() === 2) {
+      return;
+    }
+    const inactive: Node = active === this.a ? this.b : this.a;
+    inactive.setActive(active.active());
+    active.setActive(0);
+    return;
   }
 
   equals(s: Segment): boolean {

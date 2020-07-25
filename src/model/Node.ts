@@ -26,12 +26,8 @@ export class Node {
     }
   }
 
-  fullActivate(): void {
-    this.#active = 2  ;
-  }
-
-  forceDeactivate(): void {
-    this.#active = 0;
+  setActive(active: number): void {
+    this.#active = active;
   }
 
   dist(x: number, y: number): number {

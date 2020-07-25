@@ -120,7 +120,7 @@ export class AppComponent implements OnInit {
 
       if (!hover) {
         for (let point of nodes) {
-          point.forceDeactivate();
+          point.setActive(0);
         }
         currentHover = undefined;
         renderUtil.renderHover(currentHover);
@@ -145,12 +145,14 @@ export class AppComponent implements OnInit {
       if (i !== undefined) {
         oldState.push(segments[i]);
         segments.splice(i, 1);
+        active.maybeDeactivate();
       } else {
         const t = new Segment(active, hover);
         if (oldState.isRepetition(t)) {
-          t.flip();
+          t.flipYellow();
           oldState.clear();
         } else {
+          t.simpleFlip();
           oldState.push(t);
         }
         segments.push(t);
@@ -162,7 +164,6 @@ export class AppComponent implements OnInit {
         }
         return s.b.i - t.b.i;
       });
-      active.maybeDeactivate();
       renderUtil.render(segments);
       currentHover = undefined;
       onMouseMove(e);
