@@ -1,4 +1,4 @@
-import {Point} from "../model/Point";
+import {Node} from "../model/Node";
 import {Segment} from "../model/Segment";
 import {Library} from "./Library";
 
@@ -11,10 +11,10 @@ const tau = 2 * Math.PI;
 
 export class RenderUtil {
 
-  points: Point[];
+  points: Node[];
   canvas: HTMLCanvasElement;
 
-  constructor(points: Point[], canvas: HTMLCanvasElement) {
+  constructor(points: Node[], canvas: HTMLCanvasElement) {
     this.points = points;
     this.canvas = canvas;
   }
@@ -30,8 +30,8 @@ export class RenderUtil {
       ctx.beginPath();
       ctx.strokeStyle = '#faebd7';
       ctx.lineWidth = 1.5;
-      ctx.moveTo(segment.a.x, segment.a.y);
-      ctx.lineTo(segment.b.x, segment.b.y);
+      ctx.moveTo(segment.a.x(), segment.a.y());
+      ctx.lineTo(segment.b.x(), segment.b.y());
       ctx.stroke();
       const div: HTMLElement = document.createElement("tr");
       div.innerHTML = "<td>" + segment.a.i + "</td><td>" + segment.b.i + "</td>";
@@ -40,17 +40,17 @@ export class RenderUtil {
     this.renderHover(undefined);
   }
 
-  renderHover(hover: Point): void {
+  renderHover(hover: Node): void {
     const ctx: CanvasRenderingContext2D = this.canvas.getContext("2d");
     for (let r of this.points) {
       ctx.beginPath();
-      ctx.arc(r.x, r.y, Library.R, 0, tau);
+      ctx.arc(r.x(), r.y(), Library.R, 0, tau);
       ctx.fillStyle = r.active() === 2 ? color_active2 : r.active() === 1 ? color_active : r === hover ? color_hover : color_inactive;
       ctx.fill();
       ctx.font = "12px Arial";
       ctx.fillStyle = r.active() === 2 ? "#000000" : "#ffffff";
       let number = r.i < 10 ? 4 : 7;
-      ctx.fillText("" + r.i, r.x - number, r.y + 5);
+      ctx.fillText("" + r.i, r.x() - number, r.y() + 5);
     }
   }
 }

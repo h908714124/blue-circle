@@ -1,10 +1,11 @@
 import {Component, OnInit} from '@angular/core';
-import {Point} from '../model/Point';
+import {Node} from '../model/Node';
 import {Segment} from '../model/Segment';
 import {Title} from "@angular/platform-browser";
 import {RenderUtil} from "../util/RenderUtil";
 import {Library} from "../util/Library";
 import {OldStateChecker} from "../util/OldStateChecker";
+import {Point} from "../model/Point";
 
 @Component({
   selector: 'app-root',
@@ -19,36 +20,33 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
 
-    const m: number = Math.min(window.innerWidth, window.innerHeight);
-    const w: number = m - 4.0;
-    const h: number = m - 4.0;
-    const r: number = (Math.min(w, h) - 52.0) / 2.0; // radius
+    const m: number = Math.min(window.innerWidth, window.innerHeight) - 4;
+    const r: number = (m - 52.0) / 2.0; // radius
 
-    const x0: number = w / 2;
-    const y0: number = h / 2;
-    const points: Point[] = [];
+    const center: Point = new Point(m / 2, m / 2);
+    const nodes: Node[] = [];
     const segments: Segment[] = [];
     const N = 17; // how many dots to draw
 
     const oldState: OldStateChecker = new OldStateChecker();
 
-    let currentHover: Point;
+    let currentHover: Node;
 
     for (let i = 0; i < N; i++) {
       const phi: number = 2 * i * Math.PI * (1.0 / N);
-      const x: number = x0 + r * Math.cos(phi);
-      const y = y0 - r * Math.sin(phi);
-      points.push(new Point(i + 1, x, y));
+      const x: number = center.x + r * Math.cos(phi);
+      const y: number = center.y - r * Math.sin(phi);
+      nodes.push(new Node(i + 1, x, y));
     }
 
     const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
-    const renderUtil = new RenderUtil(points, canvas);
-    canvas.width = w;
-    canvas.height = h;
+    const renderUtil = new RenderUtil(nodes, canvas);
+    canvas.width = m;
+    canvas.height = m;
     renderUtil.renderHover(undefined);
 
     function onMouseMove(e: MouseEvent): void {
-      const hover: Point = findHover(e, findActive());
+      const hover: Node = findHover(e, findActive());
       if (hover === currentHover) {
         return;
       }
@@ -62,8 +60,8 @@ export class AppComponent implements OnInit {
       renderUtil.renderHover(currentHover);
     };
 
-    function findActive(): Point {
-      for (let r of points) {
+    function findActive(): Node {
+      for (let r of nodes) {
         if (r.active() !== 0) {
           return r;
         }
@@ -71,7 +69,7 @@ export class AppComponent implements OnInit {
       return undefined;
     }
 
-    function findHover(e: MouseEvent, active: Point): Point {
+    function findHover(e: MouseEvent, active: Node): Node {
       // important: correct mouse position:
       const rect: DOMRect = canvas.getBoundingClientRect();
       const x: number = e.clientX - rect.left;
@@ -83,15 +81,15 @@ export class AppComponent implements OnInit {
       }
     }
 
-    function findHoverByAngle(x: number, y: number, active: Point): Point {
+    function findHoverByAngle(x: number, y: number, active: Node): Node {
       const angle = active.angle(x, y);
-      let bestP: Point = undefined;
+      let bestP: Node = undefined;
       let bestD: number = 100;
-      for (let p of points) {
+      for (let p of nodes) {
         if (active === p) {
           continue;
         }
-        const d: number = Math.abs(angle - active.angle(p.x, p.y));
+        const d: number = Math.abs(angle - active.angle(p.x(), p.y()));
         if (d < bestD) {
           bestD = d;
           bestP = p;
@@ -100,10 +98,10 @@ export class AppComponent implements OnInit {
       return bestP;
     }
 
-    function findHoverByDistance(x: number, y: number): Point {
-      let bestP: Point = undefined;
+    function findHoverByDistance(x: number, y: number): Node {
+      let bestP: Node = undefined;
       let bestD: number = r / 2;
-      for (let p of points) {
+      for (let p of nodes) {
         const d: number = p.dist(x, y);
         if (d < bestD) {
           bestD = d;
@@ -128,11 +126,11 @@ export class AppComponent implements OnInit {
 
     canvas.onmouseup = function (e: MouseEvent) {
 
-      const active: Point = findActive();
-      const hover: Point = findHover(e, active);
+      const active: Node = findActive();
+      const hover: Node = findHover(e, active);
 
       if (!hover) {
-        for (let point of points) {
+        for (let point of nodes) {
           point.forceDeactivate();
         }
         currentHover = undefined;

@@ -17,5 +17,8 @@
     {
       "path": "./e2e/tsconfig.json"
     }
-  ]
+  ],
+  "compilerOptions": {
+    "target": "es2015"
+  }
 }

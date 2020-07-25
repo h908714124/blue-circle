@@ -1,33 +1,11 @@
 export class Point {
 
-  i: number;
-  x: number;
-  y: number;
-  #active: number = 0;
+  readonly x: number;
+  readonly y: number;
 
-  constructor(i, x, y) {
-    this.i = i;
+  constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
-  }
-
-  active() {
-    return this.#active;
-  }
-
-  incActive() {
-    this.#active += 1;
-    this.#active = this.#active % 3;
-  }
-
-  maybeDeactivate() {
-    if (this.#active === 1) {
-      this.#active = 0;
-    }
-  }
-
-  forceDeactivate() {
-    this.#active = 0;
   }
 
   dist(x: number, y: number): number {
