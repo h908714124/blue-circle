@@ -12,6 +12,10 @@
   float: left;
 }
 
+#buttons {
+  float: left;
+}
+
 .container {
   height: 100%;
   background-image: url(src/assets/image/cloudy.jpg);

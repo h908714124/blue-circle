@@ -2,55 +2,51 @@ import {Node} from "../model/Node";
 import {Segment} from "../model/Segment";
 import {Library} from "./Library";
 
-const color_inactive: string = "#000000";
-const color_active2: string = "yellow";
-const color_active: string = "red";
-const color_hover: string = "blue";
-
-const tau = 2 * Math.PI;
-
 export class RenderUtil {
 
-  points: Node[];
-  canvas: HTMLCanvasElement;
+  readonly points: Node[];
+  readonly canvas: HTMLCanvasElement;
+  readonly imageData: ImageData
 
-  constructor(points: Node[], canvas: HTMLCanvasElement) {
+  constructor(points: Node[], canvas: HTMLCanvasElement, imageData: ImageData) {
     this.points = points;
     this.canvas = canvas;
+    this.imageData = imageData;
   }
 
-  render(segments: Segment[]): void {
+  render(segments: Segment[], hover: Node): void {
     const ctx: CanvasRenderingContext2D = this.canvas.getContext("2d");
     const s = document.getElementById("segments");
 
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.putImageData(this.imageData, 0, 0);
+
     s.innerHTML = "";
 
     for (let segment of segments) {
       ctx.beginPath();
       ctx.strokeStyle = '#faebd7';
       ctx.lineWidth = 1.5;
-      ctx.moveTo(segment.a.x(), segment.a.y());
-      ctx.lineTo(segment.b.x(), segment.b.y());
+      const x0 = segment.a.x();
+      const y0 = segment.a.y();
+      const x1 = segment.b.x();
+      const y1 = segment.b.y();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
       ctx.stroke();
       const div: HTMLElement = document.createElement("tr");
       div.innerHTML = "<td>" + segment.a.i + "</td><td>" + segment.b.i + "</td>";
       s.appendChild(div);
     }
-    this.renderHover(undefined);
+    this.renderHover(hover);
   }
 
-  renderHover(hover: Node): void {
+  private renderHover(hover: Node): void {
     const ctx: CanvasRenderingContext2D = this.canvas.getContext("2d");
     for (let r of this.points) {
-      ctx.beginPath();
-      ctx.arc(r.x(), r.y(), Library.R, 0, tau);
-      ctx.fillStyle = r.active() === 2 ? color_active2 : r.active() === 1 ? color_active : r === hover ? color_hover : color_inactive;
-      ctx.fill();
-      ctx.font = "12px Arial";
-      ctx.fillStyle = r.active() === 2 ? "#000000" : "#ffffff";
-      let number = r.i < 10 ? 4 : 7;
-      ctx.fillText("" + r.i, r.x() - number, r.y() + 5);
+      if (r.active() === 0 && r !== hover) {
+        continue;
+      }
+      Library.renderNode(r, r.active(), r === hover, ctx);
     }
   }
 }

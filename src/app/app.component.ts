@@ -40,10 +40,19 @@ export class AppComponent implements OnInit {
     }
 
     const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
-    const renderUtil = new RenderUtil(nodes, canvas);
+    const button: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('action-button');
     canvas.width = m;
     canvas.height = m;
-    renderUtil.renderHover(undefined);
+    const ctx: CanvasRenderingContext2D = canvas.getContext("2d");
+    for (let r of nodes) {
+      Library.renderNode(r, 0, false, ctx);
+    }
+
+    const imageData: ImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    button.onclick = function (e: MouseEvent) {
+      alert('hi');
+    }
+    const renderUtil = new RenderUtil(nodes, canvas, imageData);
 
     function onMouseMove(e: MouseEvent): void {
       const hover: Node = findHover(e, findActive());
@@ -51,13 +60,13 @@ export class AppComponent implements OnInit {
         return;
       }
       currentHover = hover;
-      renderUtil.renderHover(currentHover);
+      renderUtil.render(segments, currentHover);
     }
 
     canvas.onmousemove = onMouseMove;
     canvas.onmouseout = function () {
       currentHover = undefined;
-      renderUtil.renderHover(currentHover);
+      renderUtil.render(segments, currentHover);
     };
 
     function findActive(): Node {
@@ -123,7 +132,7 @@ export class AppComponent implements OnInit {
           point.setActive(0);
         }
         currentHover = undefined;
-        renderUtil.renderHover(currentHover);
+        renderUtil.render(segments, currentHover);
         return;
       }
 
@@ -134,7 +143,7 @@ export class AppComponent implements OnInit {
           const x: number = e.clientX - rect.left;
           const y: number = e.clientY - rect.top;
           currentHover = findHoverByAngle(x, y, hover.point());
-          renderUtil.renderHover(currentHover);
+          renderUtil.render(segments, currentHover);
         }
         currentHover = undefined;
         onMouseMove(e);
@@ -164,7 +173,6 @@ export class AppComponent implements OnInit {
         }
         return s.b.i - t.b.i;
       });
-      renderUtil.render(segments);
       currentHover = undefined;
       onMouseMove(e);
     }
