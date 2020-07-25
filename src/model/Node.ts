@@ -45,5 +45,9 @@ export class Node {
   y(): number {
     return this.#p.y;
   }
+
+  p(): Point {
+    return this.#p;
+  }
 }
 

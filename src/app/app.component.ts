@@ -74,42 +74,31 @@ export class AppComponent implements OnInit {
       const rect: DOMRect = canvas.getBoundingClientRect();
       const x: number = e.clientX - rect.left;
       const y: number = e.clientY - rect.top;
-      if (active === undefined || active.dist(x, y) < Library.R + 6) {
-        return findHoverByDistance(x, y);
-      } else {
-        return findHoverByAngle(x, y, active)
+      if (active === undefined) {
+        if (center.dist(x, y) < Library.R + 6) {
+          return undefined;
+        }
+        return findHoverByAngle(x, y, center);
       }
+      if (active.dist(x, y) < Library.R + 6) {
+        return active;
+      }
+      return findHoverByAngle(x, y, active.p())
     }
 
-    function findHoverByAngle(x: number, y: number, active: Node): Node {
+    function findHoverByAngle(x: number, y: number, active: Point): Node {
       const angle = active.angle(x, y);
       let bestP: Node = undefined;
       let bestD: number = 100;
-      for (let p of nodes) {
-        if (active === p) {
+      for (let node of nodes) {
+        if (active === node.p()) {
           continue;
         }
-        const d: number = Math.abs(angle - active.angle(p.x(), p.y()));
+        const d: number = Math.abs(angle - active.angle(node.x(), node.y()));
         if (d < bestD) {
           bestD = d;
-          bestP = p;
+          bestP = node;
         }
-      }
-      return bestP;
-    }
-
-    function findHoverByDistance(x: number, y: number): Node {
-      let bestP: Node = undefined;
-      let bestD: number = r / 2;
-      for (let p of nodes) {
-        const d: number = p.dist(x, y);
-        if (d < bestD) {
-          bestD = d;
-          bestP = p;
-        }
-      }
-      if (bestD >= r / 2) {
-        return undefined;
       }
       return bestP;
     }
