@@ -6,6 +6,7 @@ import {Library} from "../util/Library";
 import {OldStateChecker} from "../util/OldStateChecker";
 import {Point} from "../model/Point";
 import {State} from "../util/State";
+import {Graph} from "../model/Graph";
 
 @Component({
   selector: 'app-root',
@@ -21,8 +22,8 @@ export class AppComponent implements OnInit {
 
     const center: Point = new Point(m / 2, m / 2);
     const nodes: Node[] = [];
-    const segments: Segment[] = [];
     const N = 17; // how many dots to draw
+    const segments: Graph = new Graph(N);
 
     const oldState: OldStateChecker = new OldStateChecker();
 
@@ -97,16 +98,6 @@ export class AppComponent implements OnInit {
       return bestP;
     }
 
-    function findSegment(a, b): number {
-      for (let i = 0; i < segments.length; i++) {
-        let segment: Segment = segments[i];
-        if ((segment.a === a && segment.b === b) || (segment.a === b && segment.b === a)) {
-          return i;
-        }
-      }
-      return undefined;
-    }
-
     canvas.onmouseup = function (e: MouseEvent) {
 
       const active: Node = state.activeNode();
@@ -134,10 +125,10 @@ export class AppComponent implements OnInit {
         return;
       }
 
-      const i: number = findSegment(active, hover);
-      if (i !== undefined) {
-        oldState.push(segments[i]);
-        segments.splice(i, 1);
+      const segmentExists: boolean = segments.hasSegment(active.i, hover.i);
+      if (segmentExists) {
+        oldState.push(new Segment(active, hover));
+        segments.removeSegment(active.i, hover.i);
         state.maybeDeactivate();
       } else {
         const t = new Segment(active, hover);
@@ -148,15 +139,8 @@ export class AppComponent implements OnInit {
           state.simpleFlip(t);
           oldState.push(t);
         }
-        segments.push(t);
+        segments.addSegment(active.i, hover.i);
       }
-      segments.sort((s, t) => {
-        const da = s.a.i - t.a.i;
-        if (da !== 0) {
-          return da;
-        }
-        return s.b.i - t.b.i;
-      });
       currentHover = undefined;
       onMouseMove(e);
     }

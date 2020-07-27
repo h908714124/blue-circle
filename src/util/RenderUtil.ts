@@ -1,7 +1,7 @@
 import {Node} from "../model/Node";
-import {Segment} from "../model/Segment";
 import {Library} from "./Library";
 import {State} from "./State";
+import {Graph} from "../model/Graph";
 
 export class RenderUtil {
 
@@ -17,7 +17,7 @@ export class RenderUtil {
     this.state = state;
   }
 
-  render(segments: Segment[], hover: Node): void {
+  render(segments: Graph, hover: Node): void {
     const ctx: CanvasRenderingContext2D = this.canvas.getContext('2d');
     const s = document.getElementById('segments');
 
@@ -25,27 +25,29 @@ export class RenderUtil {
 
     s.innerHTML = "";
 
-    for (let segment of segments) {
+    segments.forEach(((x, y) => {
       ctx.beginPath();
       ctx.strokeStyle = '#faebd7';
       ctx.lineWidth = 1.5;
-      const x0 = segment.a.x();
-      const y0 = segment.a.y();
-      const x1 = segment.b.x();
-      const y1 = segment.b.y();
+      let a = this.points[x];
+      let b = this.points[y];
+      const x0 = a.x();
+      const y0 = a.y();
+      const x1 = b.x();
+      const y1 = b.y();
       ctx.moveTo(x0, y0);
       ctx.lineTo(x1, y1);
       ctx.stroke();
       const div: HTMLElement = document.createElement("tr");
-      div.innerHTML = "<td>" + segment.a.i + "</td><td>" + segment.b.i + "</td>";
+      div.innerHTML = "<td>" + a.i + "</td><td>" + b.i + "</td>";
       s.appendChild(div);
-    }
+    }));
     this.renderHover(hover);
   }
 
   private renderHover(hover: Node): void {
     const ctx: CanvasRenderingContext2D = this.canvas.getContext('2d');
-    const active = this.state.activeNode();
+    const active: Node = this.state.activeNode();
     if (active !== undefined) {
       Library.renderNode(active, this.state.activeLevel(), false, ctx);
     }
