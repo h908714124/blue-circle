@@ -20,6 +20,10 @@ export class State {
       this._activeNode = undefined;
       this._activeLevel = 0;
     }
+    if (this._activeLevel === 0) {
+      this._activeNode = undefined;
+      return;
+    }
     this._activeNode = activeNode.i;
   }
 
@@ -63,11 +67,15 @@ export class State {
   incActive(): void {
     this._activeLevel += 1;
     this._activeLevel = this._activeLevel % 3;
+    if (this._activeLevel === 0) {
+      this._activeNode = undefined;
+    }
   }
 
   maybeDeactivate(): void {
     if (this._activeLevel === 1) {
       this._activeLevel = 0;
+      this._activeNode = undefined;
     }
   }
 }

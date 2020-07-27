@@ -18,8 +18,8 @@ export class RenderUtil {
   }
 
   render(segments: Segment[], hover: Node): void {
-    const ctx: CanvasRenderingContext2D = this.canvas.getContext("2d");
-    const s = document.getElementById("segments");
+    const ctx: CanvasRenderingContext2D = this.canvas.getContext('2d');
+    const s = document.getElementById('segments');
 
     ctx.putImageData(this.imageData, 0, 0);
 
@@ -49,6 +49,20 @@ export class RenderUtil {
     if (active !== undefined) {
       Library.renderNode(active, this.state.activeLevel(), false, ctx);
     }
-    Library.renderNode(hover, 0, true, ctx);
+    Library.renderNode(hover, active === hover ? this.state.activeLevel() : 0, true, ctx);
+    if (active === undefined) {
+      return;
+    }
+    if (active !== hover) {
+      ctx.strokeStyle = '#fdfd54';
+      ctx.lineWidth = 1.5;
+      const x0 = active.x();
+      const y0 = active.y();
+      const x1 = hover.x();
+      const y1 = hover.y();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      ctx.stroke();
+    }
   }
 }
