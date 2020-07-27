@@ -1,11 +1,11 @@
 import {Component, OnInit} from '@angular/core';
 import {Node} from '../model/Node';
 import {Segment} from '../model/Segment';
-import {Title} from "@angular/platform-browser";
 import {RenderUtil} from "../util/RenderUtil";
 import {Library} from "../util/Library";
 import {OldStateChecker} from "../util/OldStateChecker";
 import {Point} from "../model/Point";
+import {State} from "../util/State";
 
 @Component({
   selector: 'app-root',
@@ -13,10 +13,6 @@ import {Point} from "../model/Point";
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-
-  constructor(titleService: Title) {
-    titleService.setTitle('Blue Circle');
-  }
 
   ngOnInit(): void {
 
@@ -36,26 +32,24 @@ export class AppComponent implements OnInit {
       const phi: number = 2 * i * Math.PI * (1.0 / N);
       const x: number = center.x + r * Math.cos(phi);
       const y: number = center.y - r * Math.sin(phi);
-      nodes.push(new Node(i + 1, x, y));
+      nodes.push(new Node(i, x, y));
     }
 
+    const state: State = new State(nodes);
+
     const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
-    const button: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('action-button');
     canvas.width = m;
     canvas.height = m;
-    const ctx: CanvasRenderingContext2D = canvas.getContext("2d");
+    const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
     for (let r of nodes) {
       Library.renderNode(r, 0, false, ctx);
     }
 
     const imageData: ImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    button.onclick = function (e: MouseEvent) {
-      alert('hi');
-    }
-    const renderUtil = new RenderUtil(nodes, canvas, imageData);
+    const renderUtil = new RenderUtil(nodes, canvas, imageData, state);
 
     function onMouseMove(e: MouseEvent): void {
-      const hover: Node = findHover(e, findActive());
+      const hover: Node = findHover(e, state.activeNode());
       if (hover === currentHover) {
         return;
       }
@@ -68,15 +62,6 @@ export class AppComponent implements OnInit {
       currentHover = undefined;
       renderUtil.render(segments, currentHover);
     };
-
-    function findActive(): Node {
-      for (let r of nodes) {
-        if (r.active() !== 0) {
-          return r;
-        }
-      }
-      return undefined;
-    }
 
     function findHover(e: MouseEvent, active: Node): Node {
       // important: correct mouse position:
@@ -124,21 +109,20 @@ export class AppComponent implements OnInit {
 
     canvas.onmouseup = function (e: MouseEvent) {
 
-      const active: Node = findActive();
+      const active: Node = state.activeNode();
       const hover: Node = findHover(e, active);
 
       if (!hover) {
-        for (let point of nodes) {
-          point.setActive(0);
-        }
+        state.setActiveNode(undefined);
         currentHover = undefined;
         renderUtil.render(segments, currentHover);
         return;
       }
 
       if (active === hover || !active) {
-        hover.incActive();
-        if (hover.active() !== 0) {
+        state.incActive();
+        state.setActiveNode(hover);
+        if (state.activeLevel() !== 0) {
           const rect: DOMRect = canvas.getBoundingClientRect();
           const x: number = e.clientX - rect.left;
           const y: number = e.clientY - rect.top;
@@ -154,14 +138,14 @@ export class AppComponent implements OnInit {
       if (i !== undefined) {
         oldState.push(segments[i]);
         segments.splice(i, 1);
-        active.maybeDeactivate();
+        state.maybeDeactivate();
       } else {
         const t = new Segment(active, hover);
         if (oldState.isRepetition(t)) {
-          t.flipYellow();
+          state.flipYellow(t);
           oldState.clear();
         } else {
-          t.simpleFlip();
+          state.simpleFlip(t);
           oldState.push(t);
         }
         segments.push(t);
