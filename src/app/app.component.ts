@@ -40,10 +40,11 @@ export class AppComponent implements OnInit {
 
     const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
     const actionButton: HTMLButtonElement = <HTMLButtonElement>document.getElementById('action-button');
-    actionButton.onclick = function () {
+    actionButton.onclick = function (e: MouseEvent) {
       state.deleteMode = !state.deleteMode;
       actionButton.textContent = state.deleteMode ? 'Now deleting edges' : 'Now creating edges';
       actionButton.setAttribute('class', state.deleteMode ? 'deleteState' : 'createState');
+      e.preventDefault();
     };
     canvas.width = m;
     canvas.height = m;
