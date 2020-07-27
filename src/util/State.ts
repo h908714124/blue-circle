@@ -3,6 +3,7 @@ import {Segment} from "../model/Segment";
 
 export class State {
 
+  deleteMode: boolean = false;
   private _activeNode: number;
   private _activeLevel: number = 0;
   private readonly nodes: Node[];

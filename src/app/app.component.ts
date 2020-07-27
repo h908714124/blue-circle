@@ -23,7 +23,7 @@ export class AppComponent implements OnInit {
     const center: Point = new Point(m / 2, m / 2);
     const nodes: Node[] = [];
     const N = 17; // how many dots to draw
-    const segments: Graph = new Graph(N);
+    const graph: Graph = new Graph(N);
 
     const oldState: OldStateChecker = new OldStateChecker();
 
@@ -39,6 +39,12 @@ export class AppComponent implements OnInit {
     const state: State = new State(nodes);
 
     const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
+    const actionButton: HTMLButtonElement = <HTMLButtonElement>document.getElementById('action-button');
+    actionButton.onclick = function () {
+      state.deleteMode = !state.deleteMode;
+      actionButton.textContent = state.deleteMode ? 'Now deleting edges' : 'Now creating edges';
+      actionButton.setAttribute('class', state.deleteMode ? 'deleteState' : 'createState');
+    };
     canvas.width = m;
     canvas.height = m;
     const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
@@ -47,7 +53,7 @@ export class AppComponent implements OnInit {
     }
 
     const imageData: ImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const renderUtil = new RenderUtil(nodes, canvas, imageData, state);
+    const renderUtil = new RenderUtil(nodes, canvas, imageData, state, graph);
 
     function onMouseMove(e: MouseEvent): void {
       const hover: Node = findHover(e, state.activeNode());
@@ -55,13 +61,13 @@ export class AppComponent implements OnInit {
         return;
       }
       currentHover = hover;
-      renderUtil.render(segments, currentHover);
+      renderUtil.render(graph, currentHover);
     }
 
     canvas.onmousemove = onMouseMove;
     canvas.onmouseout = function () {
       currentHover = undefined;
-      renderUtil.render(segments, currentHover);
+      renderUtil.render(graph, currentHover);
     };
 
     function findHover(e: MouseEvent, active: Node): Node {
@@ -106,7 +112,7 @@ export class AppComponent implements OnInit {
       if (!hover) {
         state.setActiveNode(undefined);
         currentHover = undefined;
-        renderUtil.render(segments, currentHover);
+        renderUtil.render(graph, currentHover);
         return;
       }
 
@@ -118,28 +124,32 @@ export class AppComponent implements OnInit {
           const x: number = e.clientX - rect.left;
           const y: number = e.clientY - rect.top;
           currentHover = findHoverByAngle(x, y, hover.point());
-          renderUtil.render(segments, currentHover);
+          renderUtil.render(graph, currentHover);
         }
         currentHover = undefined;
         onMouseMove(e);
         return;
       }
 
-      const segmentExists: boolean = segments.hasSegment(active.i, hover.i);
-      if (segmentExists) {
-        oldState.push(new Segment(active, hover));
-        segments.removeSegment(active.i, hover.i);
-        state.maybeDeactivate();
-      } else {
-        const t = new Segment(active, hover);
-        if (oldState.isRepetition(t)) {
-          state.flipYellow(t);
-          oldState.clear();
-        } else {
-          state.simpleFlip(t);
-          oldState.push(t);
+      const segmentExists: boolean = graph.hasSegment(active.i, hover.i);
+      if (state.deleteMode) {
+        if (segmentExists) {
+          oldState.push(new Segment(active, hover));
+          graph.removeSegment(active.i, hover.i);
+          state.maybeDeactivate();
         }
-        segments.addSegment(active.i, hover.i);
+      } else {
+        if (!segmentExists) {
+          const t = new Segment(active, hover);
+          if (oldState.isRepetition(t)) {
+            state.flipYellow(t);
+            oldState.clear();
+          } else {
+            state.simpleFlip(t);
+            oldState.push(t);
+          }
+          graph.addSegment(active.i, hover.i);
+        }
       }
       currentHover = undefined;
       onMouseMove(e);

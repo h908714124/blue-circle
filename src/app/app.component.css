@@ -16,6 +16,38 @@
   float: left;
 }
 
+a.deleteState:link {
+  color: #fa2f38;
+}
+
+a.deleteState:visited {
+  color: #fa2f38;
+}
+
+a.deleteState:hover {
+  color: #fc5058;
+}
+
+a.deleteState:active {
+  color: #fa2f38;
+}
+
+a.createState:link {
+  color: #fdfd54;
+}
+
+a.createState:visited {
+  color: #fdfd54;
+}
+
+a.createState:hover {
+  color: #fafaba;
+}
+
+a.createState:active {
+  color: #fdfd54;
+}
+
 .container {
   height: 100%;
   background-image: url(src/assets/image/cloudy.jpg);

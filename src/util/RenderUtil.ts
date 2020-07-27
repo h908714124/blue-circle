@@ -5,16 +5,19 @@ import {Graph} from "../model/Graph";
 
 export class RenderUtil {
 
-  readonly points: Node[];
-  readonly canvas: HTMLCanvasElement;
-  readonly imageData: ImageData;
+  private readonly nodes: Node[];
+  private readonly canvas: HTMLCanvasElement;
+  private readonly imageData: ImageData;
   private readonly state: State;
+  private readonly graph: Graph;
 
-  constructor(points: Node[], canvas: HTMLCanvasElement, imageData: ImageData, state: State) {
-    this.points = points;
+
+  constructor(points: Node[], canvas: HTMLCanvasElement, imageData: ImageData, state: State, graph: Graph) {
+    this.nodes = points;
     this.canvas = canvas;
     this.imageData = imageData;
     this.state = state;
+    this.graph = graph;
   }
 
   render(segments: Graph, hover: Node): void {
@@ -29,8 +32,8 @@ export class RenderUtil {
       ctx.beginPath();
       ctx.strokeStyle = '#faebd7';
       ctx.lineWidth = 1.5;
-      let a = this.points[x];
-      let b = this.points[y];
+      let a = this.nodes[x];
+      let b = this.nodes[y];
       const x0 = a.x();
       const y0 = a.y();
       const x1 = b.x();
@@ -56,15 +59,18 @@ export class RenderUtil {
       return;
     }
     if (active !== hover) {
-      ctx.strokeStyle = '#fdfd54';
-      ctx.lineWidth = 1.5;
-      const x0 = active.x();
-      const y0 = active.y();
-      const x1 = hover.x();
-      const y1 = hover.y();
-      ctx.moveTo(x0, y0);
-      ctx.lineTo(x1, y1);
-      ctx.stroke();
+      if (!this.state.deleteMode && !this.graph.hasSegment(active.i, hover.i) ||
+        this.state.deleteMode && this.graph.hasSegment(active.i, hover.i)) {
+        ctx.strokeStyle = this.state.deleteMode ? '#fa2f38' : "#fdfd54";
+        ctx.lineWidth = 1.5;
+        const x0 = active.x();
+        const y0 = active.y();
+        const x1 = hover.x();
+        const y1 = hover.y();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+      }
     }
   }
 }
