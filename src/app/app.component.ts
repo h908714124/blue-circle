@@ -132,15 +132,15 @@ export class AppComponent implements OnInit {
         return;
       }
 
-      const segmentExists: boolean = graph.hasSegment(active.i, hover.i);
+      const existingSegment: Segment = graph.getSegment(active.i, hover.i);
       if (state.deleteMode) {
-        if (segmentExists) {
-          oldState.push(new Segment(active, hover));
+        if (existingSegment !== undefined) {
+          oldState.push(existingSegment);
           graph.removeSegment(active.i, hover.i);
           state.maybeDeactivate();
         }
       } else {
-        if (!segmentExists) {
+        if (existingSegment === undefined) {
           const t = new Segment(active, hover);
           if (oldState.isRepetition(t)) {
             state.flipYellow(t);
