@@ -5,15 +5,12 @@ import {Graph} from "../model/Graph";
 
 export class RenderUtil {
 
-  private readonly nodes: Node[];
   private readonly canvas: HTMLCanvasElement;
   private readonly imageData: ImageData;
   private readonly state: State;
   private readonly graph: Graph;
 
-
-  constructor(points: Node[], canvas: HTMLCanvasElement, imageData: ImageData, state: State, graph: Graph) {
-    this.nodes = points;
+  constructor(canvas: HTMLCanvasElement, imageData: ImageData, state: State, graph: Graph) {
     this.canvas = canvas;
     this.imageData = imageData;
     this.state = state;
@@ -28,12 +25,12 @@ export class RenderUtil {
 
     s.innerHTML = "";
 
-    segments.forEach(((x, y) => {
+    segments.forEach((t => {
       ctx.beginPath();
       ctx.strokeStyle = '#faebd7';
       ctx.lineWidth = 1.5;
-      let a = this.nodes[x];
-      let b = this.nodes[y];
+      let a = t.a;
+      let b = t.b;
       const x0 = a.x();
       const y0 = a.y();
       const x1 = b.x();

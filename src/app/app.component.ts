@@ -54,7 +54,7 @@ export class AppComponent implements OnInit {
     }
 
     const imageData: ImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const renderUtil = new RenderUtil(nodes, canvas, imageData, state, graph);
+    const renderUtil = new RenderUtil(canvas, imageData, state, graph);
 
     function onMouseMove(e: MouseEvent): void {
       const hover: Node = findHover(e, state.activeNode());

@@ -32,9 +32,9 @@ export class Graph {
     this.set(i, j, undefined);
   }
 
-  forEach(f: (x: number, y: number) => void): void {
+  forEach(f: (t: Segment) => void): void {
     for (let t of this.segmentList) {
-      f.call(undefined, t.a.i, t.b.i);
+      f.call(undefined, t);
     }
   }
 
