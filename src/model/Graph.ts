@@ -1,24 +1,26 @@
+import {Segment} from "./Segment";
+
 export class Graph {
 
-  private readonly segments: number[][];
+  private readonly segments: Segment[][];
 
   constructor(N: number) {
     this.segments = [];
     for (let i = 0; i < N; i++) {
-      let items = [];
+      let items: Segment[] = [];
       for (let j = 0; j < N - 1; j++) {
-        items.push(0);
+        items.push(undefined);
       }
       this.segments.push(items);
     }
   }
 
-  addSegment(i: number, j: number): void {
-    this.set(i, j, 1);
+  addSegment(t: Segment): void {
+    this.set(t.a.i, t.b.i, t);
   }
 
   removeSegment(i: number, j: number): void {
-    this.set(i, j, 0);
+    this.set(i, j, undefined);
   }
 
   forEach(f: (x: number, y: number) => void): void {
@@ -26,7 +28,7 @@ export class Graph {
       const items = this.segments[i];
       for (let j = 0; j < items.length; j++) {
         const item = items[j];
-        if (item !== 0) {
+        if (item !== undefined) {
           f.call(undefined, i, j);
         }
       }
@@ -34,16 +36,20 @@ export class Graph {
   }
 
   hasSegment(i: number, j: number): boolean {
-    if (i === j) {
-      return false;
-    }
-    if (i < j) {
-      return this.segments[j][i] !== 0;
-    }
-    return this.segments[i][j] !== 0;
+    return this.getSegment(i, j) !== undefined;
   }
 
-  private set(i: number, j: number, data: number): void {
+  getSegment(i: number, j: number): Segment {
+    if (i === j) {
+      return undefined;
+    }
+    if (i < j) {
+      return this.segments[j][i];
+    }
+    return this.segments[i][j];
+  }
+
+  private set(i: number, j: number, data: Segment): void {
     if (i === j) {
       return;
     }

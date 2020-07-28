@@ -149,7 +149,7 @@ export class AppComponent implements OnInit {
             state.simpleFlip(t);
             oldState.push(t);
           }
-          graph.addSegment(active.i, hover.i);
+          graph.addSegment(t);
         }
       }
       currentHover = undefined;
