@@ -3,6 +3,7 @@ import {Segment} from "./Segment";
 export class Graph {
 
   private readonly segments: Segment[][];
+  private readonly segmentList: Segment[] = []; // same content, for faster iteration
 
   constructor(N: number) {
     this.segments = [];
@@ -16,22 +17,24 @@ export class Graph {
   }
 
   addSegment(t: Segment): void {
+    if (!this.hasSegment(t.a.i, t.b.i)) {
+      this.segmentList.push(t);
+    }
     this.set(t.a.i, t.b.i, t);
   }
 
   removeSegment(i: number, j: number): void {
+    const existing = this.getSegment(i, j);
+    if (existing !== undefined) {
+      const index = this.segmentList.findIndex(s => s === existing);
+      this.segmentList.splice(index, 1);
+    }
     this.set(i, j, undefined);
   }
 
   forEach(f: (x: number, y: number) => void): void {
-    for (let i = 0; i < this.segments.length; i++) {
-      const items = this.segments[i];
-      for (let j = 0; j < items.length; j++) {
-        const item = items[j];
-        if (item !== undefined) {
-          f.call(undefined, i, j);
-        }
-      }
+    for (let t of this.segmentList) {
+      f.call(undefined, t.a.i, t.b.i);
     }
   }
 

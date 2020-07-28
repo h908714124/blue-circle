@@ -54,11 +54,13 @@ export class RenderUtil {
     if (active !== undefined) {
       Library.renderNode(active, this.state.activeLevel(), false, ctx);
     }
-    Library.renderNode(hover, active === hover ? this.state.activeLevel() : 0, true, ctx);
+    if (hover !== undefined) {
+      Library.renderNode(hover, active === hover ? this.state.activeLevel() : 0, true, ctx);
+    }
     if (active === undefined) {
       return;
     }
-    if (active !== hover) {
+    if (active !== hover && hover !== undefined) {
       if (!this.state.deleteMode && !this.graph.hasSegment(active.i, hover.i) ||
         this.state.deleteMode && this.graph.hasSegment(active.i, hover.i)) {
         ctx.strokeStyle = this.state.deleteMode ? '#fa2f38' : "#fdfd54";
