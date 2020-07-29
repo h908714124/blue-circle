@@ -21,10 +21,6 @@ export class State {
       this._activeNode = undefined;
       this._activeLevel = 0;
     }
-    if (this._activeLevel === 0) {
-      this._activeNode = undefined;
-      return;
-    }
     this._activeNode = activeNode.i;
   }
 

@@ -44,6 +44,9 @@ export class AppComponent implements OnInit {
       state.deleteMode = !state.deleteMode;
       actionButton.textContent = state.deleteMode ? 'Now deleting edges' : 'Now creating edges';
       actionButton.setAttribute('class', state.deleteMode ? 'deleteState' : 'createState');
+      if (state.deleteMode) {
+        state.setActiveNode(undefined);
+      }
       e.preventDefault();
     };
     canvas.width = m;
