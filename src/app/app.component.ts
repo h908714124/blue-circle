@@ -157,11 +157,6 @@ export class AppComponent implements OnInit {
       }
 
       if (active === hover) {
-        for (let node of nodes) {
-          if (!graph.hasSegment(active.i, node.i)) {
-            graph.addSegment(new Segment(active, node));
-          }
-        }
         state.setActiveNode(undefined);
         const rect: DOMRect = canvas.getBoundingClientRect();
         const x: number = e.clientX - rect.left;
