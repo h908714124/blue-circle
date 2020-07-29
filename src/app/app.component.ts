@@ -3,7 +3,6 @@ import {Node} from '../model/Node';
 import {Segment} from '../model/Segment';
 import {RenderUtil} from "../util/RenderUtil";
 import {Library} from "../util/Library";
-import {OldStateChecker} from "../util/OldStateChecker";
 import {Point} from "../model/Point";
 import {State} from "../util/State";
 import {Graph} from "../model/Graph";
@@ -24,8 +23,6 @@ export class AppComponent implements OnInit {
     const nodes: Node[] = [];
     const N = 17; // how many dots to draw
     const graph: Graph = new Graph(N);
-
-    const oldState: OldStateChecker = new OldStateChecker();
 
     let currentHover: Node;
     let currentSegmentHover: Segment;
@@ -163,26 +160,13 @@ export class AppComponent implements OnInit {
         return;
       }
 
-      const existingSegment: Segment = graph.getSegment(active.i, hover.i);
-      if (state.deleteMode) {
-        if (existingSegment !== undefined) {
-          oldState.push(existingSegment);
-          graph.removeSegment(active.i, hover.i);
-          state.maybeDeactivate();
-        }
-      } else {
-        if (existingSegment === undefined) {
-          const t = new Segment(active, hover);
-          if (oldState.isRepetition(t)) {
-            state.flipYellow(t);
-            oldState.clear();
-          } else {
-            state.simpleFlip(t);
-            oldState.push(t);
-          }
-          graph.addSegment(t);
-        }
+      if (graph.hasSegment(active.i, hover.i)) {
+        return;
       }
+
+      const t = new Segment(active, hover);
+      state.simpleFlip(t);
+      graph.addSegment(t);
       currentHover = undefined;
       renderUtil.render(currentHover, currentSegmentHover);
     }
