@@ -86,6 +86,7 @@ export class AppComponent implements OnInit {
     canvas.onmousemove = onMouseMove;
     canvas.onmouseout = function () {
       currentHover = undefined;
+      currentSegmentHover = undefined;
       renderUtil.render(currentHover, currentSegmentHover);
     };
 
@@ -95,12 +96,12 @@ export class AppComponent implements OnInit {
       const x: number = e.clientX - rect.left;
       const y: number = e.clientY - rect.top;
       if (active === undefined) {
-        if (center.dist(x, y) < Library.R + 6) {
+        if (center.dist(x, y) < Library.R) {
           return undefined;
         }
-        return findHoverByAngle(x, y, center);
+        return findHoverByDist(x, y);
       }
-      if (active.dist(x, y) < Library.R + 6) {
+      if (active.dist(x, y) < Library.R) {
         return active;
       }
       return findHoverByAngle(x, y, active.point())
@@ -115,6 +116,19 @@ export class AppComponent implements OnInit {
           continue;
         }
         const d: number = Math.abs(angle - active.angle(node.x(), node.y()));
+        if (d < bestD) {
+          bestD = d;
+          bestP = node;
+        }
+      }
+      return bestP;
+    }
+
+    function findHoverByDist(x: number, y: number): Node {
+      let bestP: Node = undefined;
+      let bestD: number = 1000;
+      for (let node of nodes) {
+        const d: number = node.dist(x, y);
         if (d < bestD) {
           bestD = d;
           bestP = node;
