@@ -5,24 +5,24 @@ export class State {
 
   deleteMode: boolean = false;
   private _activeNode: number;
-  private _activeLevel: number = 0;
+  private _activeLevel: boolean = false;
   private readonly nodes: Node[];
 
   constructor(nodes: Node[]) {
     this.nodes = nodes;
   }
 
-  activeLevel(): number {
+  activeLevel(): boolean {
     return this._activeLevel;
   }
 
   setActiveNode(activeNode: Node): void {
     if (activeNode === undefined) {
       this._activeNode = undefined;
-      this._activeLevel = 0;
+      this._activeLevel = false;
       return;
     }
-    if (this._activeLevel === 0) {
+    if (!this._activeLevel) {
       return;
     }
     this._activeNode = activeNode.i;
@@ -35,30 +35,16 @@ export class State {
     return this.nodes[this._activeNode];
   }
 
-  findLevel(node: Node): number {
+  findLevel(node: Node): boolean {
     if (this._activeNode !== node.i) {
-      return 0;
+      return false;
     }
     return this._activeLevel;
   }
 
-  flipYellow(s: Segment): void {
-    const active: Node = this.findLevel(s.a) !== 0 ? s.a : s.b;
-    const inactive: Node = active === s.a ? s.b : s.a;
-    let level = this.findLevel(active);
-    if (level === 0) {
-      return;
-    }
-    if (level === 2) {
-      this._activeNode = inactive.i;
-      return;
-    }
-    this._activeLevel = 2;
-  }
-
   simpleFlip(s: Segment): void {
-    const active: Node = this.findLevel(s.a) !== 0 ? s.a : s.b;
-    if (this.findLevel(active) !== 1) {
+    const active: Node = this.findLevel(s.a) ? s.a : s.b;
+    if (!this.findLevel(active)) {
       return;
     }
     const inactive: Node = active === s.a ? s.b : s.a;
@@ -66,17 +52,6 @@ export class State {
   }
 
   incActive(): void {
-    this._activeLevel += 1;
-    this._activeLevel = this._activeLevel % 3;
-    if (this._activeLevel === 0) {
-      this._activeNode = undefined;
-    }
-  }
-
-  maybeDeactivate(): void {
-    if (this._activeLevel === 1) {
-      this._activeLevel = 0;
-      this._activeNode = undefined;
-    }
+    this._activeLevel = true;
   }
 }

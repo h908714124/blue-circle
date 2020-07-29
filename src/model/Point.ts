@@ -13,7 +13,11 @@ export class Point {
   }
 
   angle(x: number, y: number): number {
-    return Math.atan2(this.y - y, this.x - x);
+    const result = Math.atan2(this.y - y, this.x - x);
+    if (result > Math.PI) {
+      return result - Math.PI;
+    }
+    return result;
   }
 
   subtract(p: Point): Point {

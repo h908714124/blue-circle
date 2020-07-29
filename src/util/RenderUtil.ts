@@ -60,7 +60,7 @@ export class RenderUtil {
       Library.renderNode(active, this.state.activeLevel(), false, ctx);
     }
     if (hover !== undefined) {
-      Library.renderNode(hover, active === hover ? this.state.activeLevel() : 0, true, ctx);
+      Library.renderNode(hover, active === hover ? this.state.activeLevel() : false, true, ctx);
     }
     if (active === undefined) {
       return;
