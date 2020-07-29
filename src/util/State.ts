@@ -20,6 +20,10 @@ export class State {
     if (activeNode === undefined) {
       this._activeNode = undefined;
       this._activeLevel = 0;
+      return;
+    }
+    if (this._activeLevel === 0) {
+      return;
     }
     this._activeNode = activeNode.i;
   }

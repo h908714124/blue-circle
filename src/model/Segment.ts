@@ -20,7 +20,7 @@ export class Segment {
       this.a = a;
       this.b = b;
     }
-    let v = this.a.point().subtract(this.b.point()).orthogonal(5);
+    let v = this.a.point().subtract(this.b.point()).orthogonal(8);
     this.a0 = this.a.point().add(v);
     this.b0 = this.b.point().add(v);
     this.a1 = this.a.point().subtract(v);
@@ -32,5 +32,15 @@ export class Segment {
       return false;
     }
     return s.a === this.a && s.b === this.b;
+  }
+
+  isNear(x: number, y: number): boolean {
+    let side0 = this.side(this.a0, this.b0, x, y);
+    let side1 = this.side(this.a1, this.b1, x, y);
+    return side0 < 0 && side1 > 0 || side0 > 0 && side1 < 0;
+  }
+
+  private side(a: Point, b: Point, x: number, y: number) {
+    return (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x);
   }
 }

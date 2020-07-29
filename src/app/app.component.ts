@@ -28,6 +28,7 @@ export class AppComponent implements OnInit {
     const oldState: OldStateChecker = new OldStateChecker();
 
     let currentHover: Node;
+    let currentSegmentHover: Segment;
 
     for (let i = 0; i < N; i++) {
       const phi: number = 2 * i * Math.PI * (1.0 / N);
@@ -46,6 +47,9 @@ export class AppComponent implements OnInit {
       actionButton.setAttribute('class', state.deleteMode ? 'deleteState' : 'createState');
       if (state.deleteMode) {
         state.setActiveNode(undefined);
+        currentHover = undefined;
+      } else {
+        currentSegmentHover = undefined;
       }
       e.preventDefault();
     };
@@ -60,18 +64,32 @@ export class AppComponent implements OnInit {
     const renderUtil = new RenderUtil(canvas, imageData, state, graph);
 
     function onMouseMove(e: MouseEvent): void {
-      const hover: Node = findHover(e, state.activeNode());
-      if (hover === currentHover) {
-        return;
+      if (state.deleteMode) {
+        const rect: DOMRect = canvas.getBoundingClientRect();
+        const x: number = e.clientX - rect.left;
+        const y: number = e.clientY - rect.top;
+        if (currentSegmentHover !== undefined && currentSegmentHover.isNear(x, y)) {
+          return;
+        }
+        const hover: Segment = graph.findHover(x, y);
+        if (hover === currentSegmentHover) {
+          return;
+        }
+        currentSegmentHover = hover;
+      } else {
+        const hover: Node = findHover(e, state.activeNode());
+        if (hover === currentHover) {
+          return;
+        }
+        currentHover = hover;
       }
-      currentHover = hover;
-      renderUtil.render(graph, currentHover);
+      renderUtil.render(currentHover, currentSegmentHover);
     }
 
     canvas.onmousemove = onMouseMove;
     canvas.onmouseout = function () {
       currentHover = undefined;
-      renderUtil.render(graph, currentHover);
+      renderUtil.render(currentHover, currentSegmentHover);
     };
 
     function findHover(e: MouseEvent, active: Node): Node {
@@ -110,13 +128,23 @@ export class AppComponent implements OnInit {
 
     canvas.onmouseup = function (e: MouseEvent) {
 
+      if (state.deleteMode) {
+        if (currentSegmentHover === undefined) {
+          return;
+        }
+        graph.removeSegment(currentSegmentHover.a.i, currentSegmentHover.b.i);
+        currentSegmentHover = undefined;
+        renderUtil.render(undefined, undefined);
+        return;
+      }
+
       const active: Node = state.activeNode();
       const hover: Node = findHover(e, active);
 
       if (!hover) {
         state.setActiveNode(undefined);
         currentHover = undefined;
-        renderUtil.render(graph, currentHover);
+        renderUtil.render(currentHover, currentSegmentHover);
         return;
       }
 
@@ -128,10 +156,10 @@ export class AppComponent implements OnInit {
           const x: number = e.clientX - rect.left;
           const y: number = e.clientY - rect.top;
           currentHover = findHoverByAngle(x, y, hover.point());
-          renderUtil.render(graph, currentHover);
+          renderUtil.render(currentHover, currentSegmentHover);
         }
         currentHover = undefined;
-        onMouseMove(e);
+        renderUtil.render(currentHover, currentSegmentHover);
         return;
       }
 
@@ -156,7 +184,7 @@ export class AppComponent implements OnInit {
         }
       }
       currentHover = undefined;
-      onMouseMove(e);
+      renderUtil.render(currentHover, currentSegmentHover);
     }
   }
 }

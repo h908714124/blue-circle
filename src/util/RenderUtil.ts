@@ -2,6 +2,7 @@ import {Node} from "../model/Node";
 import {Library} from "./Library";
 import {State} from "./State";
 import {Graph} from "../model/Graph";
+import {Segment} from "../model/Segment";
 
 export class RenderUtil {
 
@@ -10,6 +11,10 @@ export class RenderUtil {
   private readonly state: State;
   private readonly graph: Graph;
 
+  private readonly colorRed = '#fa2f38';
+  private readonly colorWhite = '#faebd7';
+  private readonly colorYellow = '#fdfd54';
+
   constructor(canvas: HTMLCanvasElement, imageData: ImageData, state: State, graph: Graph) {
     this.canvas = canvas;
     this.imageData = imageData;
@@ -17,7 +22,8 @@ export class RenderUtil {
     this.graph = graph;
   }
 
-  render(segments: Graph, hover: Node): void {
+
+  render(hover: Node, segmentHover: Segment): void {
     const ctx: CanvasRenderingContext2D = this.canvas.getContext('2d');
     const s = document.getElementById('segments');
 
@@ -25,9 +31,9 @@ export class RenderUtil {
 
     s.innerHTML = "";
 
-    segments.forEach((t => {
+    this.graph.forEach((t => {
       ctx.beginPath();
-      ctx.strokeStyle = '#faebd7';
+      ctx.strokeStyle = t === segmentHover ? this.colorRed : this.colorWhite;
       ctx.lineWidth = 1.5;
       let a = t.a;
       let b = t.b;
@@ -42,7 +48,9 @@ export class RenderUtil {
       div.innerHTML = "<td>" + a.i + "</td><td>" + b.i + "</td>";
       s.appendChild(div);
     }));
-    this.renderHover(hover);
+    if (segmentHover === undefined) {
+      this.renderHover(hover);
+    }
   }
 
   private renderHover(hover: Node): void {
@@ -60,7 +68,7 @@ export class RenderUtil {
     if (active !== hover && hover !== undefined) {
       if (!this.state.deleteMode && !this.graph.hasSegment(active.i, hover.i) ||
         this.state.deleteMode && this.graph.hasSegment(active.i, hover.i)) {
-        ctx.strokeStyle = this.state.deleteMode ? '#fa2f38' : "#fdfd54";
+        ctx.strokeStyle = this.state.deleteMode ? this.colorRed : this.colorYellow;
         ctx.lineWidth = 1.5;
         const x0 = active.x();
         const y0 = active.y();

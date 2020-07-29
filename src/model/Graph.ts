@@ -1,5 +1,4 @@
 import {Segment} from "./Segment";
-import {Point} from "./Point";
 
 export class Graph {
 
@@ -55,17 +54,11 @@ export class Graph {
 
   findHover(x: number, y: number): Segment {
     for (let t of this.segmentList) {
-      let side0 = this.side(t.a0, t.b0, x, y);
-      let side1 = this.side(t.a1, t.b1, x, y);
-      if (side0 < 0 && side1 > 0 || side0 > 0 && side1 < 0) {
+      if (t.isNear(x, y)) {
         return t;
       }
     }
     return undefined;
-  }
-
-  private side(a: Point, b: Point, x: number, y: number) {
-    return (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x);
   }
 
   private set(i: number, j: number, data: Segment): void {
