@@ -126,12 +126,15 @@ export class AppComponent implements OnInit {
     canvas.onmouseup = function (e: MouseEvent) {
 
       if (state.deleteMode) {
-        if (currentSegmentHover === undefined) {
-          return;
+        const rect: DOMRect = canvas.getBoundingClientRect();
+        const x: number = e.clientX - rect.left;
+        const y: number = e.clientY - rect.top;
+        const hover: Segment = graph.findHover(x, y);
+        if (hover !== undefined) {
+          graph.removeSegment(hover.a.i, hover.b.i);
+          renderUtil.render(undefined, undefined);
         }
-        graph.removeSegment(currentSegmentHover.a.i, currentSegmentHover.b.i);
-        currentSegmentHover = undefined;
-        renderUtil.render(undefined, undefined);
+        currentSegmentHover = hover;
         return;
       }
 
