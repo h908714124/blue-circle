@@ -4,7 +4,6 @@ export class Library {
 
   public static readonly tau: number = 2 * Math.PI;
   public static readonly color_inactive: string = "#000000";
-  public static readonly color_active2: string = "yellow";
   public static readonly color_active: string = "red";
   public static readonly color_hover: string = "blue";
 

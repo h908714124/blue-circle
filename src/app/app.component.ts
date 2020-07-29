@@ -54,7 +54,7 @@ export class AppComponent implements OnInit {
     canvas.height = m;
     const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
     for (let r of nodes) {
-      Library.renderNode(r, 0, false, ctx);
+      Library.renderNode(r, false, false, ctx);
     }
 
     const imageData: ImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
