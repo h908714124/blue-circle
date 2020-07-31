@@ -3,9 +3,9 @@ import {Node} from '../model/Node';
 import {Segment} from '../model/Segment';
 import {RenderUtil} from "../util/RenderUtil";
 import {Library} from "../util/Library";
-import {Point} from "../model/Point";
 import {State} from "../util/State";
 import {Graph} from "../model/Graph";
+import {HoverUtil} from "../util/HoverUtil";
 
 @Component({
   selector: 'app-root',
@@ -16,27 +16,19 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
 
-    const m: number = Math.min(window.innerWidth, window.innerHeight) - 4;
-    const r: number = (m - 52.0) / 2.0; // radius
-
-    const center: Point = new Point(m / 2, m / 2);
-    const nodes: Node[] = [];
-    const N = 17; // how many dots to draw
-    const graph: Graph = new Graph(N);
+    const graph: Graph = new Graph(Library.N);
 
     let currentHover: Node;
     let currentSegmentHover: Segment;
 
-    for (let i = 0; i < N; i++) {
-      const phi: number = 2 * i * Math.PI * (1.0 / N);
-      const x: number = center.x + r * Math.cos(phi);
-      const y: number = center.y - r * Math.sin(phi);
-      nodes.push(new Node(i, x, y));
-    }
+    const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
+
+    const hoverUtil: HoverUtil = new HoverUtil(canvas);
+    const nodes = hoverUtil.initNodes();
+    const imageData: ImageData = hoverUtil.renderNodes();
 
     const state: State = new State(nodes);
 
-    const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
     const actionButton: HTMLButtonElement = <HTMLButtonElement>document.getElementById('action-button');
     actionButton.onclick = function (e: MouseEvent) {
       state.deleteMode = !state.deleteMode;
@@ -50,15 +42,8 @@ export class AppComponent implements OnInit {
       }
       e.preventDefault();
     };
-    canvas.width = m;
-    canvas.height = m;
-    const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
-    for (let r of nodes) {
-      Library.renderNode(r, false, false, ctx);
-    }
 
-    const imageData: ImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const renderUtil = new RenderUtil(canvas, imageData, state, graph);
+    const renderUtil: RenderUtil = new RenderUtil(canvas, imageData, state, graph);
 
     function onMouseMove(e: MouseEvent): void {
       if (state.deleteMode) {
@@ -74,7 +59,7 @@ export class AppComponent implements OnInit {
         }
         currentSegmentHover = hover;
       } else {
-        const hover: Node = findHover(e, state.activeNode());
+        const hover: Node = hoverUtil.findHover(e, state.activeNode());
         if (hover === currentHover) {
           return;
         }
@@ -89,53 +74,6 @@ export class AppComponent implements OnInit {
       currentSegmentHover = undefined;
       renderUtil.render(currentHover, currentSegmentHover);
     };
-
-    function findHover(e: MouseEvent, active: Node): Node {
-      // important: correct mouse position:
-      const rect: DOMRect = canvas.getBoundingClientRect();
-      const x: number = e.clientX - rect.left;
-      const y: number = e.clientY - rect.top;
-      if (active === undefined) {
-        if (center.dist(x, y) < Library.R) {
-          return undefined;
-        }
-        return findHoverByDist(x, y);
-      }
-      if (active.dist(x, y) < Library.R) {
-        return active;
-      }
-      return findHoverByAngle(x, y, active.point())
-    }
-
-    function findHoverByAngle(x: number, y: number, active: Point): Node {
-      const angle = active.angle(x, y);
-      let bestP: Node = undefined;
-      let bestD: number = 100;
-      for (let node of nodes) {
-        if (active === node.point()) {
-          continue;
-        }
-        const d: number = Math.abs(angle - active.angle(node.x(), node.y()));
-        if (d < bestD) {
-          bestD = d;
-          bestP = node;
-        }
-      }
-      return bestP;
-    }
-
-    function findHoverByDist(x: number, y: number): Node {
-      let bestP: Node = undefined;
-      let bestD: number = 1000;
-      for (let node of nodes) {
-        const d: number = node.dist(x, y);
-        if (d < bestD) {
-          bestD = d;
-          bestP = node;
-        }
-      }
-      return bestP;
-    }
 
     canvas.onmouseup = function (e: MouseEvent) {
 
@@ -153,7 +91,7 @@ export class AppComponent implements OnInit {
       }
 
       const active: Node = state.activeNode();
-      const hover: Node = findHover(e, active);
+      const hover: Node = hoverUtil.findHover(e, active);
 
       if (!hover) {
         state.setActiveNode(undefined);
@@ -175,7 +113,7 @@ export class AppComponent implements OnInit {
         const rect: DOMRect = canvas.getBoundingClientRect();
         const x: number = e.clientX - rect.left;
         const y: number = e.clientY - rect.top;
-        currentHover = findHoverByAngle(x, y, center);
+        currentHover = hoverUtil.findHoverByAngle(x, y, hoverUtil.center);
         renderUtil.render(currentHover, currentSegmentHover);
         return;
       }

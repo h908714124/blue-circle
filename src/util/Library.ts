@@ -2,6 +2,7 @@ import {Node} from "../model/Node";
 
 export class Library {
 
+  public static readonly N = 17; // how many dots to draw
   public static readonly TAU: number = 2 * Math.PI;
   public static readonly color_inactive: string = "#000000";
   public static readonly color_active: string = "red";
