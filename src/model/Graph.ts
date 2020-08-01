@@ -64,32 +64,12 @@ export class Graph {
     return undefined;
   }
 
-  cycle(node: Node, direction: number): number {
-    if (direction < 0) {
-      return this.cycleBackward(node);
-    } else {
-      return this.cycleForward(node);
-    }
-  }
-
-  private cycleForward(node: Node): number {
-    const i = node.i;
+  cycle(active: Node, hover: Node, direction: number): number {
+    const definedHover: number = hover == undefined ? 0 : hover.i;
     for (let j = 0; j < this.N; j++) {
-      const k = (j + i + 1) % this.N;
-      const t = this.getSegment(i, k);
-      if (t === undefined) {
-        return k;
-      }
-    }
-    return undefined;
-  }
-
-  private cycleBackward(node: Node): number {
-    const i = node.i;
-    for (let j = 0; j < this.N; j++) {
-      const k = (i + this.N - j - 1) % this.N;
-      const t = this.getSegment(i, k);
-      if (t === undefined) {
+      const k: number = (this.N + (direction * j) + definedHover) % this.N;
+      const exists: boolean = this.hasSegment(active.i, k);
+      if (!exists && (hover === undefined || k !== hover.i)) {
         return k;
       }
     }

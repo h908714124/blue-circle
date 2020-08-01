@@ -75,27 +75,35 @@ export class AppComponent implements OnInit {
       renderUtil.render(currentHover, currentSegmentHover);
     };
 
-    canvas.onkeyup = function (e: KeyboardEvent) {
+    document.onkeyup = function (e: KeyboardEvent) {
       e.preventDefault();
-      const direction: number = e.code === Library.arrow_left ? -1
-        : e.code === Library.arrow_right ? 1
+      const direction: number = e.code === Library.arrow_left ? 1
+        : e.code === Library.arrow_right ? -1
           : e.code === Library.arrow_up ? 0
             : undefined;
       if (direction === undefined) {
         return;
       }
-      const active: Node = state.activeNode();
+      let active: Node = state.activeNode();
       if (active === undefined) {
-        return;
+        active = nodes[0];
       }
-      if (direction === 0 && currentHover !== undefined) {
-        graph.addSegment(new Segment(active, currentHover));
+      if (direction === 0) {
+        if (currentHover !== undefined) {
+          const t = new Segment(active, currentHover);
+          state.simpleFlip(t);
+          graph.addSegment(t);
+          const hover = graph.cycle(state.activeNode(), undefined, 1);
+          if (hover !== undefined) {
+            currentHover = nodes[hover];
+          }
+        }
+      } else {
+        const hover = graph.cycle(active, currentHover, direction);
+        if (hover !== undefined) {
+          currentHover = nodes[hover];
+        }
       }
-      const hover = graph.cycle(active, direction);
-      if (hover === undefined) {
-        return;
-      }
-      currentHover = nodes[hover];
       renderUtil.render(currentHover, currentSegmentHover);
     }
 
