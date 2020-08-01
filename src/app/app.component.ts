@@ -75,11 +75,20 @@ export class AppComponent implements OnInit {
       renderUtil.render(currentHover, currentSegmentHover);
     };
 
+    function maybePreventDefault(e: KeyboardEvent) {
+      if (e.code === Library.arrow_left ||
+        e.code === Library.arrow_right ||
+        e.code === Library.arrow_up ||
+        e.code === Library.arrow_down) {
+        e.preventDefault();
+      }
+    }
+
     document.onkeyup = function (e: KeyboardEvent) {
-      e.preventDefault();
+      maybePreventDefault(e);
     }
     document.onkeydown = function (e: KeyboardEvent) {
-      e.preventDefault();
+      maybePreventDefault(e);
       if (e.code === Library.arrow_down) {
         const last = graph.lastSegment();
         if (last === undefined) {
