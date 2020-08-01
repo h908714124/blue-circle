@@ -31,6 +31,7 @@ export class AppComponent implements OnInit {
 
     const actionButton: HTMLButtonElement = <HTMLButtonElement>document.getElementById('action-button');
     actionButton.onclick = function (e: MouseEvent) {
+      e.preventDefault();
       state.deleteMode = !state.deleteMode;
       actionButton.textContent = state.deleteMode ? 'Now deleting edges' : 'Now creating edges';
       actionButton.setAttribute('class', state.deleteMode ? 'deleteState' : 'createState');
@@ -40,7 +41,6 @@ export class AppComponent implements OnInit {
       } else {
         currentSegmentHover = undefined;
       }
-      e.preventDefault();
     };
 
     const renderUtil: RenderUtil = new RenderUtil(canvas, imageData, state, graph);
@@ -76,7 +76,27 @@ export class AppComponent implements OnInit {
     };
 
     canvas.onkeyup = function (e: KeyboardEvent) {
-
+      e.preventDefault();
+      const direction: number = e.code === Library.arrow_left ? -1
+        : e.code === Library.arrow_right ? 1
+          : e.code === Library.arrow_up ? 0
+            : undefined;
+      if (direction === undefined) {
+        return;
+      }
+      const active: Node = state.activeNode();
+      if (active === undefined) {
+        return;
+      }
+      if (direction === 0 && currentHover !== undefined) {
+        graph.addSegment(new Segment(active, currentHover));
+      }
+      const hover = graph.cycle(active, direction);
+      if (hover === undefined) {
+        return;
+      }
+      currentHover = nodes[hover];
+      renderUtil.render(currentHover, currentSegmentHover);
     }
 
     canvas.onmouseup = function (e: MouseEvent) {

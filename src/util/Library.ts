@@ -7,12 +7,14 @@ export class Library {
   public static readonly color_inactive: string = "#000000";
   public static readonly color_active: string = "red";
   public static readonly color_hover: string = "blue";
-
-  public static readonly R = 20; // node radius
+  public static readonly arrow_up: string = 'ArrowUp'
+  public static readonly arrow_right: string = 'ArrowRight'
+  public static readonly arrow_left: string = 'ArrowLeft'
+  public static readonly r: number = 20; // node radius
 
   public static renderNode(r: Node, active: boolean, hover: boolean, ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
-    ctx.arc(r.x(), r.y(), Library.R, 0, Library.TAU);
+    ctx.arc(r.x(), r.y(), Library.r, 0, Library.TAU);
     ctx.fillStyle = active ? Library.color_active : hover ? Library.color_hover : Library.color_inactive;
     ctx.fill();
     ctx.font = "12px Arial";

@@ -1,7 +1,9 @@
 import {Segment} from "./Segment";
+import {Node} from "./Node";
 
 export class Graph {
 
+  private readonly N: number; // number of nodes in the graph
   private readonly segments: Segment[][];
   private readonly segmentList: Segment[] = []; // same content, for faster iteration
 
@@ -14,6 +16,7 @@ export class Graph {
       }
       this.segments.push(items);
     }
+    this.N = N;
   }
 
   addSegment(t: Segment): void {
@@ -56,6 +59,38 @@ export class Graph {
     for (let t of this.segmentList) {
       if (t.isNear(x, y)) {
         return t;
+      }
+    }
+    return undefined;
+  }
+
+  cycle(node: Node, direction: number): number {
+    if (direction < 0) {
+      return this.cycleBackward(node);
+    } else {
+      return this.cycleForward(node);
+    }
+  }
+
+  private cycleForward(node: Node): number {
+    const i = node.i;
+    for (let j = 0; j < this.N; j++) {
+      const k = (j + i + 1) % this.N;
+      const t = this.getSegment(i, k);
+      if (t === undefined) {
+        return k;
+      }
+    }
+    return undefined;
+  }
+
+  private cycleBackward(node: Node): number {
+    const i = node.i;
+    for (let j = 0; j < this.N; j++) {
+      const k = (i + this.N - j - 1) % this.N;
+      const t = this.getSegment(i, k);
+      if (t === undefined) {
+        return k;
       }
     }
     return undefined;

@@ -7,7 +7,7 @@ export class HoverUtil {
   private readonly canvas: HTMLCanvasElement;
   private readonly nodes: Node[] = [];
   readonly center: Point;
-  private readonly r: number; // radius
+  private readonly R: number; // graph radius
   private readonly ctx: CanvasRenderingContext2D;
   private imageData: ImageData;
 
@@ -17,14 +17,14 @@ export class HoverUtil {
     this.canvas.height = Math.min(window.innerWidth, window.innerHeight) - 4;
     this.ctx = this.canvas.getContext('2d');
     this.center = new Point(canvas.width / 2, canvas.height / 2);
-    this.r = (Math.min(canvas.width, canvas.height) - 52.0) / 2.0;
+    this.R = (Math.min(canvas.width, canvas.height) - 52.0) / 2.0;
   }
 
   initNodes(): Node[] {
     for (let i = 0; i < Library.N; i++) {
       const phi: number = 2 * i * Math.PI * (1.0 / Library.N);
-      const x: number = this.center.x + this.r * Math.cos(phi);
-      const y: number = this.center.y - this.r * Math.sin(phi);
+      const x: number = this.center.x + this.R * Math.cos(phi);
+      const y: number = this.center.y - this.R * Math.sin(phi);
       this.nodes.push(new Node(i, x, y));
     }
     return this.nodes;
@@ -46,12 +46,12 @@ export class HoverUtil {
     const x: number = e.clientX - rect.left;
     const y: number = e.clientY - rect.top;
     if (active === undefined) {
-      if (this.center.dist(x, y) < Library.R) {
+      if (this.center.dist(x, y) < Library.r) {
         return undefined;
       }
       return this.findHoverByDist(x, y);
     }
-    if (active.dist(x, y) < Library.R) {
+    if (active.dist(x, y) < Library.r) {
       return active;
     }
     return this.findHoverByAngle(x, y, active.point())
