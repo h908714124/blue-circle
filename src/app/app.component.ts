@@ -77,6 +77,25 @@ export class AppComponent implements OnInit {
 
     document.onkeyup = function (e: KeyboardEvent) {
       e.preventDefault();
+    }
+    document.onkeydown = function (e: KeyboardEvent) {
+      e.preventDefault();
+      if (e.code === Library.arrow_down) {
+        const last = graph.lastSegment();
+        if (last === undefined) {
+          return;
+        }
+        graph.removeSegment(last.a.i, last.b.i);
+        if (state.activeNode() === last.a) {
+          state.setActiveNode(last.b);
+          currentHover = last.a;
+        } else if (state.activeNode() === last.b) {
+          state.setActiveNode(last.a);
+          currentHover = last.b;
+        }
+        renderUtil.render(currentHover, currentSegmentHover);
+        return;
+      }
       const direction: number = e.code === Library.arrow_left ? 1
         : e.code === Library.arrow_right ? -1
           : e.code === Library.arrow_up ? 0
@@ -86,22 +105,26 @@ export class AppComponent implements OnInit {
       }
       let active: Node = state.activeNode();
       if (active === undefined) {
-        active = nodes[0];
+        return;
       }
       if (direction === 0) {
         if (currentHover !== undefined) {
           const t = new Segment(active, currentHover);
           state.simpleFlip(t);
           graph.addSegment(t);
-          const hover = graph.cycle(state.activeNode(), undefined, 1);
+          const hover = graph.cycle(state.activeNode(), active, 1);
           if (hover !== undefined) {
             currentHover = nodes[hover];
+          } else {
+            currentHover = undefined;
           }
         }
       } else {
         const hover = graph.cycle(active, currentHover, direction);
         if (hover !== undefined) {
           currentHover = nodes[hover];
+        } else {
+          currentHover = undefined;
         }
       }
       renderUtil.render(currentHover, currentSegmentHover);

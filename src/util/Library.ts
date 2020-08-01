@@ -8,6 +8,7 @@ export class Library {
   public static readonly color_active: string = "red";
   public static readonly color_hover: string = "blue";
   public static readonly arrow_up: string = 'ArrowUp'
+  public static readonly arrow_down: string = 'ArrowDown'
   public static readonly arrow_right: string = 'ArrowRight'
   public static readonly arrow_left: string = 'ArrowLeft'
   public static readonly r: number = 20; // node radius

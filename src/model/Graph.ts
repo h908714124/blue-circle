@@ -69,7 +69,7 @@ export class Graph {
     for (let j = 0; j < this.N; j++) {
       const k: number = (this.N + (direction * j) + definedHover) % this.N;
       const exists: boolean = this.hasSegment(active.i, k);
-      if (!exists && (hover === undefined || k !== hover.i)) {
+      if (!exists && (hover === undefined || k !== hover.i) && k !== active.i) {
         return k;
       }
     }
@@ -85,5 +85,12 @@ export class Graph {
     } else {
       this.segments[i][j] = data;
     }
+  }
+
+  lastSegment(): Segment {
+    if (this.segmentList.length === 0) {
+      return undefined;
+    }
+    return this.segmentList[this.segmentList.length - 1];
   }
 }
