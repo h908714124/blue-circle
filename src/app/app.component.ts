@@ -92,15 +92,22 @@ export class AppComponent implements OnInit {
       if (e.code === Library.arrow_down) {
         const last = graph.lastSegment();
         if (last === undefined) {
-          return;
-        }
-        graph.removeSegment(last.a.i, last.b.i);
-        if (state.activeNode() === last.a) {
-          state.setActiveNode(last.b);
-          currentHover = last.a;
-        } else if (state.activeNode() === last.b) {
-          state.setActiveNode(last.a);
-          currentHover = last.b;
+          const active = state.activeNode();
+          if (active !== undefined) {
+            currentHover = active;
+            state.setActiveNode(undefined);
+          } else if (currentHover !== undefined) {
+            currentHover = undefined;
+          }
+        } else {
+          graph.removeSegment(last.a.i, last.b.i);
+          if (state.activeNode() === last.a) {
+            state.setActiveNode(last.b);
+            currentHover = last.a;
+          } else if (state.activeNode() === last.b) {
+            state.setActiveNode(last.a);
+            currentHover = last.b;
+          }
         }
         renderUtil.render(currentHover, currentSegmentHover);
         return;
@@ -113,23 +120,32 @@ export class AppComponent implements OnInit {
         return;
       }
       let active: Node = state.activeNode();
-      if (active === undefined) {
-        return;
-      }
       if (direction === 0) {
-        if (currentHover !== undefined) {
-          const t = new Segment(active, currentHover);
-          state.simpleFlip(t);
-          graph.addSegment(t);
-          const hover = graph.cycle(state.activeNode(), active, 1);
-          if (hover !== undefined) {
-            currentHover = nodes[hover];
-          } else {
-            currentHover = undefined;
+        if (currentHover === undefined) {
+          currentHover = nodes[0];
+        } else {
+          if (active === undefined) {
+            active = currentHover;
+            state.incActive();
+            state.setActiveNode(active);
+            const hover = graph.cycle(active, currentHover, 1);
+            if (hover !== undefined) {
+              currentHover = nodes[hover];
+            }
+          } else if (currentHover !== active) {
+            const t = new Segment(active, currentHover);
+            state.simpleFlip(t);
+            graph.addSegment(t);
+            const hover = graph.cycle(state.activeNode(), active, 1);
+            if (hover !== undefined) {
+              currentHover = nodes[hover];
+            } else {
+              currentHover = undefined;
+            }
           }
         }
       } else {
-        const hover = graph.cycle(active, currentHover, direction);
+        const hover: number = graph.cycle(active, currentHover, direction);
         if (hover !== undefined) {
           currentHover = nodes[hover];
         } else {
@@ -156,13 +172,10 @@ export class AppComponent implements OnInit {
         return;
       }
 
-      if (!active) {
+      if (!active || graph.hasSegment(active.i, hover.i)) {
         state.incActive();
         state.setActiveNode(hover);
       } else {
-        if (graph.hasSegment(active.i, hover.i)) {
-          return;
-        }
         const t = new Segment(active, hover);
         state.simpleFlip(t);
         graph.addSegment(t);

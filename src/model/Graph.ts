@@ -65,6 +65,9 @@ export class Graph {
   }
 
   cycle(active: Node, hover: Node, direction: number): number {
+    if (active === undefined) {
+      return hover === undefined ? 0 : (hover.i + direction + this.N) % this.N;
+    }
     const definedHover: number = hover == undefined ? 0 : hover.i;
     for (let j = 0; j < this.N; j++) {
       const k: number = (this.N + (direction * j) + definedHover) % this.N;
