@@ -93,39 +93,23 @@ export class AppComponent implements OnInit {
       const active: Node = state.activeNode();
       const hover: Node = hoverUtil.findHover(e, active);
 
-      if (!hover) {
-        state.setActiveNode(undefined);
-        currentHover = undefined;
-        renderUtil.render(currentHover, currentSegmentHover);
+      if (!hover || active === hover) {
         return;
       }
 
       if (!active) {
         state.incActive();
         state.setActiveNode(hover);
-        currentHover = undefined;
-        renderUtil.render(currentHover, currentSegmentHover);
-        return;
+      } else {
+        if (graph.hasSegment(active.i, hover.i)) {
+          return;
+        }
+        const t = new Segment(active, hover);
+        state.simpleFlip(t);
+        graph.addSegment(t);
       }
 
-      if (active === hover) {
-        state.setActiveNode(undefined);
-        const rect: DOMRect = canvas.getBoundingClientRect();
-        const x: number = e.clientX - rect.left;
-        const y: number = e.clientY - rect.top;
-        currentHover = hoverUtil.findHoverByAngle(x, y, hoverUtil.center);
-        renderUtil.render(currentHover, currentSegmentHover);
-        return;
-      }
-
-      if (graph.hasSegment(active.i, hover.i)) {
-        return;
-      }
-
-      const t = new Segment(active, hover);
-      state.simpleFlip(t);
-      graph.addSegment(t);
-      currentHover = undefined;
+      currentHover = hoverUtil.findHover(e, state.activeNode());
       renderUtil.render(currentHover, currentSegmentHover);
     }
   }
