@@ -1,13 +1,12 @@
 import {Component, OnInit} from '@angular/core';
-import {Node} from '../model/Node';
-import {Segment} from '../model/Segment';
 import {RenderUtil} from "../util/RenderUtil";
 import {Library} from "../util/Library";
-import {State} from "../util/State";
+import {ActiveState} from "../util/ActiveState";
 import {Graph} from "../model/Graph";
 import {HoverUtil} from "../util/HoverUtil";
 import {KeyHandler} from "../handler/KeyHandler";
 import {HoverState} from "../util/HoverState";
+import {MouseHandler} from "../handler/MouseHandler";
 
 @Component({
   selector: 'app-root',
@@ -28,91 +27,46 @@ export class AppComponent implements OnInit {
     const nodes = hoverUtil.initNodes();
     const imageData: ImageData = hoverUtil.renderNodes();
 
-    const state: State = new State(nodes);
+    const activeState: ActiveState = new ActiveState(nodes);
 
     const actionButton: HTMLButtonElement = <HTMLButtonElement>document.getElementById('action-button');
     actionButton.onclick = function (e: MouseEvent) {
       e.preventDefault();
-      state.deleteMode = !state.deleteMode;
-      actionButton.textContent = state.deleteMode ? 'Now deleting edges' : 'Now creating edges';
-      actionButton.setAttribute('class', state.deleteMode ? 'deleteState' : 'createState');
-      if (state.deleteMode) {
-        state.setActiveNode(undefined);
+      activeState.deleteMode = !activeState.deleteMode;
+      actionButton.textContent = activeState.deleteMode ? 'Now deleting edges' : 'Now creating edges';
+      actionButton.setAttribute('class', activeState.deleteMode ? 'deleteState' : 'createState');
+      if (activeState.deleteMode) {
+        activeState.setActiveNode(undefined);
         hoverState.currentHover = undefined;
       } else {
         hoverState.currentSegmentHover = undefined;
       }
     };
 
-    const renderUtil: RenderUtil = new RenderUtil(canvas, imageData, state, graph);
+    const renderUtil: RenderUtil = new RenderUtil(canvas, imageData, activeState, graph);
+    const mouseHandler = new MouseHandler(hoverState, graph, activeState, renderUtil, hoverUtil, canvas);
+    const keyHandler = new KeyHandler(hoverState, graph, activeState, renderUtil, nodes);
 
-    function onMouseMove(e: MouseEvent): void {
-      if (state.deleteMode) {
-        const rect: DOMRect = canvas.getBoundingClientRect();
-        const x: number = e.clientX - rect.left;
-        const y: number = e.clientY - rect.top;
-        if (hoverState.currentSegmentHover !== undefined && hoverState.currentSegmentHover.isNear(x, y)) {
-          return;
-        }
-        const hover: Segment = graph.findHover(x, y);
-        if (hover === hoverState.currentSegmentHover) {
-          return;
-        }
-        hoverState.currentSegmentHover = hover;
-      } else {
-        const hover: Node = hoverUtil.findHover(e, state.activeNode());
-        if (hover === hoverState.currentHover) {
-          return;
-        }
-        hoverState.currentHover = hover;
-      }
-      renderUtil.render(hoverState.currentHover, hoverState.currentSegmentHover);
-    }
+    canvas.onmousemove = function (e: MouseEvent) {
+      mouseHandler.onMouseMove(e);
+    };
 
-    canvas.onmousemove = onMouseMove;
     canvas.onmouseout = function () {
       hoverState.currentHover = undefined;
       hoverState.currentSegmentHover = undefined;
       renderUtil.render(hoverState.currentHover, hoverState.currentSegmentHover);
     };
-    const keyHandler = new KeyHandler(hoverState, graph, state, renderUtil, nodes);
 
     document.onkeyup = function (e: KeyboardEvent) {
-      keyHandler.onkeyup(e);
+      keyHandler.onKeyUp(e);
     };
 
     document.onkeydown = function (e: KeyboardEvent) {
-      keyHandler.onkeydown(e);
+      keyHandler.onKeyDown(e);
     };
 
     canvas.onmouseup = function (e: MouseEvent) {
-
-      if (state.deleteMode) {
-        if (hoverState.currentSegmentHover !== undefined) {
-          graph.removeSegment(hoverState.currentSegmentHover.a.i, hoverState.currentSegmentHover.b.i);
-          renderUtil.render(undefined, undefined);
-        }
-        return;
-      }
-
-      const active: Node = state.activeNode();
-      const hover: Node = hoverUtil.findHover(e, active);
-
-      if (!hover || active === hover) {
-        return;
-      }
-
-      if (!active || graph.hasSegment(active.i, hover.i)) {
-        state.incActive();
-        state.setActiveNode(hover);
-      } else {
-        const t = new Segment(active, hover);
-        state.simpleFlip(t);
-        graph.addSegment(t);
-      }
-
-      hoverState.currentHover = hoverUtil.findHover(e, state.activeNode());
-      renderUtil.render(hoverState.currentHover, hoverState.currentSegmentHover);
-    }
+      mouseHandler.onMouseUp(e);
+    };
   }
 }

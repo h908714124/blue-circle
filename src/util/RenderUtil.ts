@@ -1,6 +1,6 @@
 import {Node} from "../model/Node";
 import {Library} from "./Library";
-import {State} from "./State";
+import {ActiveState} from "./ActiveState";
 import {Graph} from "../model/Graph";
 import {Segment} from "../model/Segment";
 
@@ -8,17 +8,17 @@ export class RenderUtil {
 
   private readonly canvas: HTMLCanvasElement;
   private readonly imageData: ImageData;
-  private readonly state: State;
+  private readonly activeState: ActiveState;
   private readonly graph: Graph;
 
   private readonly colorRed = '#fa2f38';
   private readonly colorWhite = '#faebd7';
   private readonly colorYellow = '#fdfd54';
 
-  constructor(canvas: HTMLCanvasElement, imageData: ImageData, state: State, graph: Graph) {
+  constructor(canvas: HTMLCanvasElement, imageData: ImageData, activeState: ActiveState, graph: Graph) {
     this.canvas = canvas;
     this.imageData = imageData;
-    this.state = state;
+    this.activeState = activeState;
     this.graph = graph;
   }
 
@@ -55,20 +55,20 @@ export class RenderUtil {
 
   private renderHover(hover: Node): void {
     const ctx: CanvasRenderingContext2D = this.canvas.getContext('2d');
-    const active: Node = this.state.activeNode();
+    const active: Node = this.activeState.activeNode();
     if (active !== undefined) {
-      Library.renderNode(active, this.state.activeLevel(), false, ctx);
+      Library.renderNode(active, this.activeState.activeLevel(), false, ctx);
     }
     if (hover !== undefined) {
-      Library.renderNode(hover, active === hover ? this.state.activeLevel() : false, true, ctx);
+      Library.renderNode(hover, active === hover ? this.activeState.activeLevel() : false, true, ctx);
     }
     if (active === undefined) {
       return;
     }
     if (active !== hover && hover !== undefined) {
-      if (!this.state.deleteMode && !this.graph.hasSegment(active.i, hover.i) ||
-        this.state.deleteMode && this.graph.hasSegment(active.i, hover.i)) {
-        ctx.strokeStyle = this.state.deleteMode ? this.colorRed : this.colorYellow;
+      if (!this.activeState.deleteMode && !this.graph.hasSegment(active.i, hover.i) ||
+        this.activeState.deleteMode && this.graph.hasSegment(active.i, hover.i)) {
+        ctx.strokeStyle = this.activeState.deleteMode ? this.colorRed : this.colorYellow;
         ctx.lineWidth = 1.5;
         const x0 = active.x();
         const y0 = active.y();

@@ -1,9 +1,9 @@
 import {Node} from '../model/Node';
 import {Segment} from "../model/Segment";
 
-export class State {
+export class ActiveState {
 
-  deleteMode: boolean = false;
+  deleteMode: boolean = false; //  TODO remove from this class and into ng controller
   private _activeNode: number;
   private _activeLevel: boolean = false;
   private readonly nodes: Node[];
