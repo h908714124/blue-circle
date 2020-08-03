@@ -6,6 +6,8 @@ import {Library} from "../util/Library";
 import {State} from "../util/State";
 import {Graph} from "../model/Graph";
 import {HoverUtil} from "../util/HoverUtil";
+import {KeyHandler} from "../handler/KeyHandler";
+import {HoverState} from "../util/HoverState";
 
 @Component({
   selector: 'app-root',
@@ -18,8 +20,7 @@ export class AppComponent implements OnInit {
 
     const graph: Graph = new Graph(Library.N);
 
-    let currentHover: Node;
-    let currentSegmentHover: Segment;
+    const hoverState = new HoverState();
 
     const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
 
@@ -37,9 +38,9 @@ export class AppComponent implements OnInit {
       actionButton.setAttribute('class', state.deleteMode ? 'deleteState' : 'createState');
       if (state.deleteMode) {
         state.setActiveNode(undefined);
-        currentHover = undefined;
+        hoverState.currentHover = undefined;
       } else {
-        currentSegmentHover = undefined;
+        hoverState.currentSegmentHover = undefined;
       }
     };
 
@@ -50,116 +51,45 @@ export class AppComponent implements OnInit {
         const rect: DOMRect = canvas.getBoundingClientRect();
         const x: number = e.clientX - rect.left;
         const y: number = e.clientY - rect.top;
-        if (currentSegmentHover !== undefined && currentSegmentHover.isNear(x, y)) {
+        if (hoverState.currentSegmentHover !== undefined && hoverState.currentSegmentHover.isNear(x, y)) {
           return;
         }
         const hover: Segment = graph.findHover(x, y);
-        if (hover === currentSegmentHover) {
+        if (hover === hoverState.currentSegmentHover) {
           return;
         }
-        currentSegmentHover = hover;
+        hoverState.currentSegmentHover = hover;
       } else {
         const hover: Node = hoverUtil.findHover(e, state.activeNode());
-        if (hover === currentHover) {
+        if (hover === hoverState.currentHover) {
           return;
         }
-        currentHover = hover;
+        hoverState.currentHover = hover;
       }
-      renderUtil.render(currentHover, currentSegmentHover);
+      renderUtil.render(hoverState.currentHover, hoverState.currentSegmentHover);
     }
 
     canvas.onmousemove = onMouseMove;
     canvas.onmouseout = function () {
-      currentHover = undefined;
-      currentSegmentHover = undefined;
-      renderUtil.render(currentHover, currentSegmentHover);
+      hoverState.currentHover = undefined;
+      hoverState.currentSegmentHover = undefined;
+      renderUtil.render(hoverState.currentHover, hoverState.currentSegmentHover);
     };
-
-    function maybePreventDefault(e: KeyboardEvent) {
-      if (e.code === Library.arrow_left ||
-        e.code === Library.arrow_right ||
-        e.code === Library.arrow_up ||
-        e.code === Library.arrow_down) {
-        e.preventDefault();
-      }
-    }
+    const keyHandler = new KeyHandler(hoverState, graph, state, renderUtil, nodes);
 
     document.onkeyup = function (e: KeyboardEvent) {
-      maybePreventDefault(e);
-    }
+      keyHandler.onkeyup(e);
+    };
+
     document.onkeydown = function (e: KeyboardEvent) {
-      maybePreventDefault(e);
-      if (e.code === Library.arrow_down) {
-        const last = graph.lastSegment();
-        if (last === undefined) {
-          const active = state.activeNode();
-          if (active !== undefined) {
-            currentHover = active;
-            state.setActiveNode(undefined);
-          } else if (currentHover !== undefined) {
-            currentHover = undefined;
-          }
-        } else {
-          graph.removeSegment(last.a.i, last.b.i);
-          if (state.activeNode() === last.a) {
-            state.setActiveNode(last.b);
-            currentHover = last.a;
-          } else if (state.activeNode() === last.b) {
-            state.setActiveNode(last.a);
-            currentHover = last.b;
-          }
-        }
-        renderUtil.render(currentHover, currentSegmentHover);
-        return;
-      }
-      const direction: number = e.code === Library.arrow_left ? 1
-        : e.code === Library.arrow_right ? -1
-          : e.code === Library.arrow_up ? 0
-            : undefined;
-      if (direction === undefined) {
-        return;
-      }
-      let active: Node = state.activeNode();
-      if (direction === 0) {
-        if (currentHover === undefined) {
-          currentHover = nodes[0];
-        } else {
-          if (active === undefined) {
-            active = currentHover;
-            state.incActive();
-            state.setActiveNode(active);
-            const hover = graph.cycle(active, currentHover, 1);
-            if (hover !== undefined) {
-              currentHover = nodes[hover];
-            }
-          } else if (currentHover !== active) {
-            const t = new Segment(active, currentHover);
-            state.simpleFlip(t);
-            graph.addSegment(t);
-            const hover = graph.cycle(state.activeNode(), active, 1);
-            if (hover !== undefined) {
-              currentHover = nodes[hover];
-            } else {
-              currentHover = undefined;
-            }
-          }
-        }
-      } else {
-        const hover: number = graph.cycle(active, currentHover, direction);
-        if (hover !== undefined) {
-          currentHover = nodes[hover];
-        } else {
-          currentHover = undefined;
-        }
-      }
-      renderUtil.render(currentHover, currentSegmentHover);
-    }
+      keyHandler.onkeydown(e);
+    };
 
     canvas.onmouseup = function (e: MouseEvent) {
 
       if (state.deleteMode) {
-        if (currentSegmentHover !== undefined) {
-          graph.removeSegment(currentSegmentHover.a.i, currentSegmentHover.b.i);
+        if (hoverState.currentSegmentHover !== undefined) {
+          graph.removeSegment(hoverState.currentSegmentHover.a.i, hoverState.currentSegmentHover.b.i);
           renderUtil.render(undefined, undefined);
         }
         return;
@@ -181,8 +111,8 @@ export class AppComponent implements OnInit {
         graph.addSegment(t);
       }
 
-      currentHover = hoverUtil.findHover(e, state.activeNode());
-      renderUtil.render(currentHover, currentSegmentHover);
+      hoverState.currentHover = hoverUtil.findHover(e, state.activeNode());
+      renderUtil.render(hoverState.currentHover, hoverState.currentSegmentHover);
     }
   }
 }
