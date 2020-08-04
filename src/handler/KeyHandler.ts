@@ -5,6 +5,7 @@ import {HoverState} from "../util/HoverState";
 import {Graph} from "../model/Graph";
 import {ActiveState} from "../util/ActiveState";
 import {RenderUtil} from "../util/RenderUtil";
+import {Mode} from "../util/Mode";
 
 export class KeyHandler {
 
@@ -13,13 +14,15 @@ export class KeyHandler {
   private readonly activeState: ActiveState;
   private readonly renderUtil: RenderUtil;
   private readonly nodes: Node[];
+  private readonly mode: Mode;
 
-  constructor(hoverState: HoverState, graph: Graph, activeState: ActiveState, renderUtil: RenderUtil, nodes: Node[]) {
+  constructor(hoverState: HoverState, graph: Graph, activeState: ActiveState, renderUtil: RenderUtil, nodes: Node[], mode: Mode) {
     this.hoverState = hoverState;
     this.graph = graph;
     this.activeState = activeState;
     this.renderUtil = renderUtil;
     this.nodes = nodes;
+    this.mode = mode;
   }
 
   private maybePreventDefault(e: KeyboardEvent) {
@@ -28,7 +31,7 @@ export class KeyHandler {
       e.code === Library.arrow_up ||
       e.code === Library.arrow_down) {
       e.preventDefault();
-      this.activeState.deleteMode = false;
+      this.mode.enterCreateMode(); // TODO enter delete mode on button down
     }
   }
 

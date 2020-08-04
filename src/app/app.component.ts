@@ -7,6 +7,7 @@ import {HoverUtil} from "../util/HoverUtil";
 import {KeyHandler} from "../handler/KeyHandler";
 import {HoverState} from "../util/HoverState";
 import {MouseHandler} from "../handler/MouseHandler";
+import {Mode} from "../util/Mode";
 
 @Component({
   selector: 'app-root',
@@ -15,7 +16,12 @@ import {MouseHandler} from "../handler/MouseHandler";
 })
 export class AppComponent implements OnInit {
 
+  currentAction: string = 'creating';
+  currentActionClass: string = 'createState';
+
   ngOnInit(): void {
+
+    const that: AppComponent = this;
 
     const graph: Graph = new Graph(Library.N);
 
@@ -29,23 +35,17 @@ export class AppComponent implements OnInit {
 
     const activeState: ActiveState = new ActiveState(nodes);
 
+    const mode = new Mode(this, activeState, hoverState);
+
     const actionButton: HTMLButtonElement = <HTMLButtonElement>document.getElementById('action-button');
     actionButton.onclick = function (e: MouseEvent) {
       e.preventDefault();
-      activeState.deleteMode = !activeState.deleteMode;
-      actionButton.textContent = activeState.deleteMode ? 'Now deleting edges' : 'Now creating edges';
-      actionButton.setAttribute('class', activeState.deleteMode ? 'deleteState' : 'createState');
-      if (activeState.deleteMode) {
-        activeState.setActiveNode(undefined);
-        hoverState.currentHover = undefined;
-      } else {
-        hoverState.currentSegmentHover = undefined;
-      }
+      mode.toggle();
     };
 
-    const renderUtil: RenderUtil = new RenderUtil(canvas, imageData, activeState, graph);
-    const mouseHandler = new MouseHandler(hoverState, graph, activeState, renderUtil, hoverUtil, canvas);
-    const keyHandler = new KeyHandler(hoverState, graph, activeState, renderUtil, nodes);
+    const renderUtil: RenderUtil = new RenderUtil(canvas, imageData, activeState, graph, mode);
+    const mouseHandler = new MouseHandler(hoverState, graph, activeState, renderUtil, hoverUtil, canvas, mode);
+    const keyHandler = new KeyHandler(hoverState, graph, activeState, renderUtil, nodes, mode);
 
     canvas.onmousemove = function (e: MouseEvent) {
       mouseHandler.onMouseMove(e);

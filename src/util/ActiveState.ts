@@ -3,7 +3,6 @@ import {Segment} from "../model/Segment";
 
 export class ActiveState {
 
-  deleteMode: boolean = false; //  TODO remove from this class and into ng controller
   private _activeNode: number;
   private _activeLevel: boolean = false;
   private readonly nodes: Node[];

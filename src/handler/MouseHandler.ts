@@ -5,6 +5,7 @@ import {Graph} from "../model/Graph";
 import {ActiveState} from "../util/ActiveState";
 import {RenderUtil} from "../util/RenderUtil";
 import {HoverUtil} from "../util/HoverUtil";
+import {Mode} from "../util/Mode";
 
 export class MouseHandler {
 
@@ -14,18 +15,20 @@ export class MouseHandler {
   private readonly renderUtil: RenderUtil;
   private readonly hoverUtil: HoverUtil;
   private readonly canvas: HTMLCanvasElement;
+  private readonly mode: Mode;
 
-  constructor(hoverState: HoverState, graph: Graph, activeState: ActiveState, renderUtil: RenderUtil, hoverUtil: HoverUtil, canvas: HTMLCanvasElement) {
+  constructor(hoverState: HoverState, graph: Graph, activeState: ActiveState, renderUtil: RenderUtil, hoverUtil: HoverUtil, canvas: HTMLCanvasElement, mode: Mode) {
     this.hoverState = hoverState;
     this.graph = graph;
     this.activeState = activeState;
     this.renderUtil = renderUtil;
     this.hoverUtil = hoverUtil;
     this.canvas = canvas;
+    this.mode = mode;
   }
 
   onMouseMove(e: MouseEvent): void {
-    if (this.activeState.deleteMode) {
+    if (this.mode.isDeleteMode()) {
       const rect: DOMRect = this.canvas.getBoundingClientRect();
       const x: number = e.clientX - rect.left;
       const y: number = e.clientY - rect.top;
@@ -49,7 +52,7 @@ export class MouseHandler {
 
   onMouseUp(e: MouseEvent): void {
 
-    if (this.activeState.deleteMode) {
+    if (this.mode.isDeleteMode()) {
       if (this.hoverState.currentSegmentHover !== undefined) {
         this.graph.removeSegment(this.hoverState.currentSegmentHover.a.i, this.hoverState.currentSegmentHover.b.i);
         this.renderUtil.render(undefined, undefined);

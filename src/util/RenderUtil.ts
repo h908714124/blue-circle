@@ -3,6 +3,7 @@ import {Library} from "./Library";
 import {ActiveState} from "./ActiveState";
 import {Graph} from "../model/Graph";
 import {Segment} from "../model/Segment";
+import {Mode} from "./Mode";
 
 export class RenderUtil {
 
@@ -14,12 +15,14 @@ export class RenderUtil {
   private readonly colorRed = '#fa2f38';
   private readonly colorWhite = '#faebd7';
   private readonly colorYellow = '#fdfd54';
+  private readonly mode: Mode;
 
-  constructor(canvas: HTMLCanvasElement, imageData: ImageData, activeState: ActiveState, graph: Graph) {
+  constructor(canvas: HTMLCanvasElement, imageData: ImageData, activeState: ActiveState, graph: Graph, mode: Mode) {
     this.canvas = canvas;
     this.imageData = imageData;
     this.activeState = activeState;
     this.graph = graph;
+    this.mode = mode;
   }
 
 
@@ -66,9 +69,9 @@ export class RenderUtil {
       return;
     }
     if (active !== hover && hover !== undefined) {
-      if (!this.activeState.deleteMode && !this.graph.hasSegment(active.i, hover.i) ||
-        this.activeState.deleteMode && this.graph.hasSegment(active.i, hover.i)) {
-        ctx.strokeStyle = this.activeState.deleteMode ? this.colorRed : this.colorYellow;
+      if (!this.mode.isDeleteMode() && !this.graph.hasSegment(active.i, hover.i) ||
+        this.mode.isDeleteMode() && this.graph.hasSegment(active.i, hover.i)) {
+        ctx.strokeStyle = this.mode.isDeleteMode() ? this.colorRed : this.colorYellow;
         ctx.lineWidth = 1.5;
         const x0 = active.x();
         const y0 = active.y();
